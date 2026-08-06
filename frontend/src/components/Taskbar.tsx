@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import windowsExplorer from '../assets/icons/windows-explorer.svg';
+import settings from '../assets/icons/settings.svg';
 import {
   Search,
   Wifi,
@@ -225,7 +226,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     {
       id: 'taskbar-pin-settings',
       label: 'Settings',
-      icon: <Settings className="w-5 h-5" style={{ color: '#BDBDBD' }} />,
+      icon: <img src={settings} alt="File Explorer" className="w-5 h-5 object-contain" />,
       onClick: onOpenSettings,
     },
   ];
@@ -236,7 +237,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
       className="fixed bottom-0 left-0 right-0 z-50 flex items-center select-none"
       style={{
         height: 48,
-        background: 'rgba(22, 22, 34, 0.92)',
+        background: 'rgba(0, 25, 250, 0.06)',
         backdropFilter: 'blur(30px) saturate(180%)',
         WebkitBackdropFilter: 'blur(30px) saturate(180%)',
         borderTop: '1px solid rgba(255,255,255,0.06)',
