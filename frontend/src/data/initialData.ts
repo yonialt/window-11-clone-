@@ -1,4 +1,5 @@
 import { Folder, Project, Wallpaper, DeveloperProfile } from '../types';
+import win11Wallpaper from '../assets/icons/win11wallpaper.jpg';
 
 export const INITIAL_PROFILE: DeveloperProfile = {
   name: 'Yonathan Altaye',
@@ -173,15 +174,17 @@ export const WALLPAPERS: Wallpaper[] = [
     id: 'win11-bloom',
     name: 'Windows 11 Bloom',
     type: 'image',
-    value: 'url("https://images.unsplash.com/photo-1614854262318-831574f15f1f?auto=format&fit=crop&w=1920&q=90") center/cover no-repeat',
+    value: `url("${win11Wallpaper}") center/cover no-repeat`,
     thumbnail: '#1a4a8a',
   },
+  // ... rest of wallpapers
+
   {
     id: 'win-classic-blue',
     name: 'Windows Classic Blue',
     type: 'gradient',
     value: 'radial-gradient(circle at 75% 30%, #1a5eb0 0%, #0c2340 45%, #050d1a 100%)',
-    thumbnail: '#1a5eb0',
+    thumbnail: '#c2c9d1ff',
   },
   {
     id: 'aurora-borealis',

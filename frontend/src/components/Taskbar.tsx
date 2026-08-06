@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import windowsLogo from '../assets/icons/windows-logo.png';
+import windowsExplorer from '../assets/icons/windows-explorer.svg';
 import {
   Search,
   Wifi,
@@ -138,37 +138,95 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     const t = setInterval(update, 10000);
     return () => clearInterval(t);
   }, []);
-
   const pinnedApps: PinnedApp[] = [
     {
       id: 'taskbar-pin-explorer',
       label: 'File Explorer',
-      icon: <FolderOpen className="w-5 h-5" style={{ color: '#FDB44B' }} />,
+      icon: <img src={windowsExplorer} alt="File Explorer" className="w-5 h-5 object-contain" />,
       onClick: onOpenAddFolderModal,
     },
     {
       id: 'taskbar-pin-browser',
       label: 'Browser',
-      icon: <Globe className="w-5 h-5" style={{ color: '#4FC3F7' }} />,
-      onClick: () => {},
-    },
-    {
-      id: 'taskbar-pin-terminal',
-      label: 'Terminal',
-      icon: <Terminal className="w-5 h-5" style={{ color: '#69F0AE' }} />,
-      onClick: onOpenTerminal,
+      // Premium gradient-globe SVG to replace the standard code-editor/browser icon
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          xmlnsXlink="http://www.w3.org/1999/xlink"
+          viewBox="0 0 48 48"
+          width="20"
+          height="20"
+        >
+          <defs>
+            <linearGradient
+              id="a"
+              x1="3.2173"
+              y1="15"
+              x2="44.7812"
+              y2="15"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0" stopColor="#d93025" />
+              <stop offset="1" stopColor="#ea4335" />
+            </linearGradient>
+
+            <linearGradient
+              id="b"
+              x1="20.7219"
+              y1="47.6791"
+              x2="41.5039"
+              y2="11.6837"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0" stopColor="#fcc934" />
+              <stop offset="1" stopColor="#fbbc04" />
+            </linearGradient>
+
+            <linearGradient
+              id="c"
+              x1="26.5981"
+              y1="46.5015"
+              x2="5.8161"
+              y2="10.506"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0" stopColor="#1e8e3e" />
+              <stop offset="1" stopColor="#34a853" />
+            </linearGradient>
+          </defs>
+
+          <circle cx="24" cy="23.9947" r="12" style={{ fill: "#fff" }} />
+
+          <path
+            d="M3.2154,36A24,24,0,1,0,12,3.2154,24,24,0,0,0,3.2154,36ZM34.3923,18A12,12,0,1,1,18,13.6077,12,12,0,0,1,34.3923,18Z"
+            style={{ fill: "none" }}
+          />
+
+          <path
+            d="M24,12H44.7812a23.9939,23.9939,0,0,0-41.5639.0029L13.6079,30l.0093-.0024A11.9852,11.9852,0,0,1,24,12Z"
+            style={{ fill: "url(#a)" }}
+          />
+
+          <circle cx="24" cy="24" r="9.5" style={{ fill: "#1a73e8" }} />
+
+          <path
+            d="M34.3913,30.0029,24.0007,48A23.994,23.994,0,0,0,44.78,12.0031H23.9989l-.0025.0093A11.985,11.985,0,0,1,34.3913,30.0029Z"
+            style={{ fill: "url(#b)" }}
+          />
+
+          <path
+            d="M13.6086,30.0031,3.218,12.006A23.994,23.994,0,0,0,24.0025,48L34.3931,30.0029l-.0067-.0068a11.9852,11.9852,0,0,1-20.7778.007Z"
+            style={{ fill: "url(#c)" }}
+          />
+        </svg>
+      ),
+      onClick: () => { },
     },
     {
       id: 'taskbar-pin-settings',
       label: 'Settings',
       icon: <Settings className="w-5 h-5" style={{ color: '#BDBDBD' }} />,
       onClick: onOpenSettings,
-    },
-    {
-      id: 'taskbar-pin-add-folder',
-      label: 'New Folder',
-      icon: <FolderPlus className="w-5 h-5" style={{ color: '#FDB44B' }} />,
-      onClick: onOpenAddFolderModal,
     },
   ];
 
@@ -187,6 +245,11 @@ export const Taskbar: React.FC<TaskbarProps> = ({
       {/* ── CENTER CLUSTER (Win11 style) ── */}
       <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5">
 
+
+
+
+
+
         {/* Start button */}
         <TaskbarIcon
           id="taskbar-btn-start"
@@ -194,38 +257,20 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           title="Start"
           isActive={isStartMenuOpen}
         >
-          <motion.img
-            src={windowsLogo}
-            alt="Start"
-            className="object-contain"
-            style={{ width: 18, height: 18 }}
+          <motion.svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 128 128"
+            width="18"
+            height="18"
             animate={{ scale: isStartMenuOpen ? 0.9 : 1 }}
-          />
+          >
+            <path
+              fill="#0078D4"
+              d="M67.328 67.331h60.669V128H67.328zm-67.325 0h60.669V128H.003zM67.328 0h60.669v60.669H67.328zM.003 0h60.669v60.669H.003z"
+            />
+          </motion.svg>
         </TaskbarIcon>
 
-        {/* Search pill */}
-        <motion.button
-          id="taskbar-btn-search"
-          onClick={onToggleStartMenu}
-          title="Search"
-          className="flex items-center gap-1.5 rounded text-slate-400 hover:text-white"
-          style={{
-            height: 36,
-            padding: '0 12px',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: 4,
-            fontSize: 12,
-            minWidth: 140,
-          }}
-          whileHover={{ background: 'rgba(255,255,255,0.10)' }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <Search className="w-3.5 h-3.5 shrink-0" />
-          <span style={{ color: 'rgba(255,255,255,0.45)', fontFamily: '"Segoe UI", sans-serif' }}>
-            Search
-          </span>
-        </motion.button>
 
         {/* Task View */}
         <TaskbarIcon
@@ -233,16 +278,14 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           onClick={onToggleTaskView}
           title="Task View"
         >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <rect x="1" y="1" width="7" height="5.5" rx="1.2" fill="rgba(255,255,255,0.75)" />
-            <rect x="10" y="1" width="7" height="5.5" rx="1.2" fill="rgba(255,255,255,0.75)" />
-            <rect x="1" y="8" width="7" height="5.5" rx="1.2" fill="rgba(255,255,255,0.75)" />
-            <rect x="10" y="8" width="7" height="5.5" rx="1.2" fill="rgba(255,255,255,0.75)" />
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Background overlapping window */}
+            <rect x="2" y="2" width="10" height="10" rx="1.5" fill="rgba(255, 255, 255, 0.12)" stroke="rgba(255, 255, 255, 0.65)" strokeWidth="1.2" />
+            {/* Foreground active window */}
+            <rect x="6" y="6" width="10" height="10" rx="1.5" fill="rgba(255, 255, 255, 0.3)" stroke="rgba(255, 255, 255, 0.9)" strokeWidth="1.2" />
           </svg>
         </TaskbarIcon>
 
-        {/* Separator */}
-        <div className="w-px h-5 mx-1" style={{ background: 'rgba(255,255,255,0.12)' }} />
 
         {/* Pinned apps */}
         {pinnedApps.map((app) => {
@@ -262,8 +305,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           );
         })}
 
-        {/* Separator */}
-        <div className="w-px h-5 mx-1" style={{ background: 'rgba(255,255,255,0.12)' }} />
+
 
         {/* Open window tabs */}
         {windows.map((win) => {
@@ -292,6 +334,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                 whileTap={{ scale: 0.95 }}
               >
                 <FolderOpen className="w-3.5 h-3.5 shrink-0" style={{ color: '#FDB44B' }} />
+
                 <span className="truncate">{win.title}</span>
               </motion.button>
               {/* Running indicator */}

@@ -1,17 +1,11 @@
 import React from 'react';
-import {
-  FolderFilled,
-  FolderAddFilled,
-  BinRecycleFullFilled,
-  GlobeFilled,
-  PhoneDesktopFilled,
-  DocumentFilled,
-  ImageFilled,
-  FolderOpenFilled,
-  AppFolderFilled,
-  CodeFilled,
-  SparkleCircleFilled,
-} from '@fluentui/react-icons';
+import folderIcon from '../assets/icons/folder.svg';
+import recycleBinIcon from '../assets/icons/recycle-bin.svg';
+import documentIcon from '../assets/icons/document.svg';
+import webIcon from '../assets/icons/web.svg';
+import mobileIcon from '../assets/icons/mobile.svg';
+import imagesIcon from '../assets/icons/images.svg';
+import addFolderIcon from '../assets/icons/add-folder.svg';
 
 interface Win11IconProps {
   name: string;
@@ -34,17 +28,17 @@ export const Win11Icon: React.FC<Win11IconProps> = ({
 
   const cls = `drop-shadow-md transition-transform ${className}`;
 
-  // Recycle Bin
+  // 1. Recycle Bin
   if (normalized.includes('trash') || normalized.includes('recycle') || normalized.includes('bin')) {
-    return <BinRecycleFullFilled style={iconStyle} className={cls} color="#29B6F6" />;
+    return <img src={recycleBinIcon} alt="Recycle Bin" style={iconStyle} className={cls} />;
   }
 
-  // Add Folder / New Folder
+  // 2. Add Folder / New Folder
   if (normalized.includes('add folder') || normalized.includes('new folder')) {
-    return <FolderAddFilled style={iconStyle} className={cls} color="#FDB44B" />;
+    return <img src={addFolderIcon} alt="Add Folder" style={iconStyle} className={cls} />;
   }
 
-  // Web Applications / Projects
+  // 3. Web Applications / Projects
   if (
     normalized.includes('web app') ||
     normalized.includes('web application') ||
@@ -52,20 +46,20 @@ export const Win11Icon: React.FC<Win11IconProps> = ({
     normalized.includes('browser') ||
     normalized.includes('projects')
   ) {
-    return <GlobeFilled style={iconStyle} className={cls} color="#4FC3F7" />;
+    return <img src={webIcon} alt="Web Applications" style={iconStyle} className={cls} />;
   }
 
-  // Mobile Projects
+  // 4. Mobile Projects
   if (
     normalized.includes('mobile') ||
     normalized.includes('phone') ||
     normalized.includes('ios') ||
     normalized.includes('android')
   ) {
-    return <PhoneDesktopFilled style={iconStyle} className={cls} color="#80DEEA" />;
+    return <img src={mobileIcon} alt="Mobile Projects" style={iconStyle} className={cls} />;
   }
 
-  // Documents & Bio / Resume / About / Contact
+  // 5. Documents & Bio / Resume / About / Contact
   if (
     normalized.includes('document') ||
     normalized.includes('bio') ||
@@ -74,34 +68,19 @@ export const Win11Icon: React.FC<Win11IconProps> = ({
     normalized.includes('pdf') ||
     normalized.includes('contact')
   ) {
-    return <DocumentFilled style={iconStyle} className={cls} color="#E0E0E0" />;
+    return <img src={documentIcon} alt="Documents" style={iconStyle} className={cls} />;
   }
 
-  // Images & Assets / Media
+  // 6. Images & Assets / Media
   if (
     normalized.includes('image') ||
     normalized.includes('photo') ||
     normalized.includes('asset') ||
     normalized.includes('media')
   ) {
-    return <ImageFilled style={iconStyle} className={cls} color="#A5D6A7" />;
+    return <img src={imagesIcon} alt="Images & Assets" style={iconStyle} className={cls} />;
   }
 
-  // Code / Web Applications (generic code)
-  if (normalized.includes('code') || normalized.includes('developer')) {
-    return <CodeFilled style={iconStyle} className={cls} color="#90CAF9" />;
-  }
-
-  // UI/UX / Design / Concepts
-  if (
-    normalized.includes('ui') ||
-    normalized.includes('ux') ||
-    normalized.includes('design') ||
-    normalized.includes('concept')
-  ) {
-    return <SparkleCircleFilled style={iconStyle} className={cls} color="#CE93D8" />;
-  }
-
-  // Default: generic folder (yellow, matches Win11)
-  return <FolderFilled style={iconStyle} className={cls} color="#FDB44B" />;
+  // 7. Folders / UI/UX / Design / Concepts / Default
+  return <img src={folderIcon} alt="Folder" style={iconStyle} className={cls} />;
 };

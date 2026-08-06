@@ -54,7 +54,18 @@ export default function App() {
 
   const [currentWallpaper, setCurrentWallpaper] = useState<Wallpaper>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.WALLPAPER);
-    return saved ? JSON.parse(saved) : WALLPAPERS[0];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        const matched = WALLPAPERS.find((w) => w.id === parsed.id);
+        if (matched) {
+          return matched;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return WALLPAPERS[0];
   });
 
   const [profile, setProfile] = useState<DeveloperProfile>(() => {
