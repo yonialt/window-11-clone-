@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+:root {
+  --win11-accent: #0078D4;
+  --win11-accent-hover: #106EBE;
+  --win11-bg: rgba(32, 32, 32, 0.85);
+  --win11-surface: rgba(44, 44, 44, 0.95);
+  --win11-border: rgba(255, 255, 255, 0.08);
+  --win11-text: rgba(255, 255, 255, 0.9);
+  --win11-text-secondary: rgba(255, 255, 255, 0.6);
+  --win11-taskbar-height: 48px;
+  --win11-font: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--win11-font);
+  overflow: hidden;
+  background: #000;
+}
+
+#root {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Win11 scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* Win11 window control hover colors */
+.win11-btn-close:hover {
+  background: #C42B1C !important;
+  color: white !important;
+}
+.win11-btn-maximize:hover,
+.win11-btn-minimize:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Snap layout preview zones */
+.snap-zone {
+  position: fixed;
+  background: rgba(0, 120, 212, 0.3);
+  border: 2px solid rgba(0, 120, 212, 0.8);
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 9999;
+  transition: all 0.15s ease;
+}

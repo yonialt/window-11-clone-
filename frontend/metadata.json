@@ -1,0 +1,6 @@
+{
+  "name": "Desktop Portfolio OS",
+  "description": "An interactive desktop-inspired portfolio launcher built with React and Tailwind CSS featuring dynamic folder organization, window management, and custom project management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
