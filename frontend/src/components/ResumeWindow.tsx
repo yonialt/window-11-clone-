@@ -8,28 +8,29 @@ interface ResumeWindowProps {
 
 const EXPERIENCE = [
   {
-    role: 'Senior Full Stack Engineer',
-    company: 'TechCorp Inc.',
-    period: '2023 – Present',
-    description: 'Led development of cloud-native SaaS platform serving 50K+ users. Architected microservices with React, Node.js, and PostgreSQL.',
+    role: 'IT Intern',
+    company: 'Bank of Abyssinia, Ethiopia',
+    period: 'Internship',
+    description:
+      'Provided technical support to employees by diagnosing and resolving hardware and software issues. Troubleshot network connectivity problems and user access issues, and supported OS installation, configuration, and maintenance.',
   },
   {
-    role: 'Full Stack Developer',
-    company: 'StartupXYZ',
-    period: '2021 – 2023',
-    description: 'Built and shipped 4 major product features. Implemented CI/CD pipeline reducing deployment time by 60%.',
-  },
-  {
-    role: 'Frontend Developer',
-    company: 'Digital Agency Co.',
-    period: '2019 – 2021',
-    description: 'Developed responsive web applications for enterprise clients using React, Vue.js, and modern CSS frameworks.',
+    role: 'Freelance Backend Developer',
+    company: 'Self-employed',
+    period: 'Freelance',
+    description:
+      'Developed backend applications and RESTful APIs using Spring Boot and Express.js. Designed secure authentication and authorization systems using JWT, integrated PostgreSQL and MongoDB databases, and delivered functional solutions including deployment and testing.',
   },
 ];
 
 const EDUCATION = [
-  { degree: 'BSc Computer Science', school: 'University of London', year: '2019' },
-  { degree: 'AWS Solutions Architect', school: 'Amazon Web Services', year: '2022' },
+  { degree: 'BSc Computer Science', school: 'University of Gondar', year: 'Graduated' },
+];
+
+const CERTIFICATIONS = [
+  { name: 'AWS Cloud Training', issuer: 'Amazon Web Services' },
+  { name: 'Microsoft Azure Fundamentals Training', issuer: 'Microsoft' },
+  { name: 'Google Cloud Training', issuer: 'Google Cloud' },
 ];
 
 export const ResumeWindow: React.FC<ResumeWindowProps> = ({ profile }) => {
@@ -38,12 +39,16 @@ export const ResumeWindow: React.FC<ResumeWindowProps> = ({ profile }) => {
 ${profile.name}
 ${profile.role}
 ${profile.email} | ${profile.location}
+${profile.github} | ${profile.linkedin}
 
 EXPERIENCE
 ${EXPERIENCE.map((e) => `${e.role} at ${e.company} (${e.period})\n${e.description}`).join('\n\n')}
 
 EDUCATION
 ${EDUCATION.map((e) => `${e.degree} — ${e.school} (${e.year})`).join('\n')}
+
+CERTIFICATIONS
+${CERTIFICATIONS.map((c) => `${c.name} — ${c.issuer}`).join('\n')}
     `.trim();
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -90,18 +95,36 @@ ${EDUCATION.map((e) => `${e.degree} — ${e.school} (${e.year})`).join('\n')}
           </div>
         </section>
 
-        <section>
+        <section className="mb-6">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
             <GraduationCap className="w-4 h-4 text-purple-400" />
-            Education & Certifications
+            Education
           </h2>
           <div className="space-y-3">
             {EDUCATION.map((edu) => (
               <div key={edu.degree} className="flex items-center gap-3 bg-white/5 rounded-xl p-4 border border-white/8">
-                <Award className="w-5 h-5 text-purple-400 shrink-0" />
+                <GraduationCap className="w-5 h-5 text-purple-400 shrink-0" />
                 <div>
                   <p className="text-sm text-white">{edu.degree}</p>
                   <p className="text-xs text-slate-400">{edu.school} · {edu.year}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-white mb-4">
+            <Award className="w-4 h-4 text-amber-400" />
+            Certifications
+          </h2>
+          <div className="space-y-3">
+            {CERTIFICATIONS.map((cert) => (
+              <div key={cert.name} className="flex items-center gap-3 bg-white/5 rounded-xl p-4 border border-white/8">
+                <Award className="w-5 h-5 text-amber-400 shrink-0" />
+                <div>
+                  <p className="text-sm text-white">{cert.name}</p>
+                  <p className="text-xs text-slate-400">{cert.issuer}</p>
                 </div>
               </div>
             ))}

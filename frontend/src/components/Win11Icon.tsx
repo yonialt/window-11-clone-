@@ -28,10 +28,6 @@ export const Win11Icon: React.FC<Win11IconProps> = ({
 
   const cls = `drop-shadow-md transition-transform ${className}`;
 
-  // 1. Recycle Bin
-  if (normalized.includes('trash') || normalized.includes('recycle') || normalized.includes('bin')) {
-    return <img src={recycleBinIcon} alt="Recycle Bin" style={iconStyle} className={cls} />;
-  }
 
   // 2. Add Folder / New Folder
   if (normalized.includes('add folder') || normalized.includes('new folder')) {
@@ -46,7 +42,7 @@ export const Win11Icon: React.FC<Win11IconProps> = ({
     normalized.includes('browser') ||
     normalized.includes('projects')
   ) {
-    return <img src={webIcon} alt="Web Applications" style={iconStyle} className={cls} />;
+    return <img src={folderIcon} alt="Folder" style={iconStyle} className={cls} />;
   }
 
   // 4. Mobile Projects
@@ -68,19 +64,10 @@ export const Win11Icon: React.FC<Win11IconProps> = ({
     normalized.includes('pdf') ||
     normalized.includes('contact')
   ) {
-    return <img src={documentIcon} alt="Documents" style={iconStyle} className={cls} />;
-  }
-
-  // 6. Images & Assets / Media
-  if (
-    normalized.includes('image') ||
-    normalized.includes('photo') ||
-    normalized.includes('asset') ||
-    normalized.includes('media')
-  ) {
-    return <img src={imagesIcon} alt="Images & Assets" style={iconStyle} className={cls} />;
+    return <img src={folderIcon} alt="Folder" style={iconStyle} className={cls} />;
   }
 
   // 7. Folders / UI/UX / Design / Concepts / Default
   return <img src={folderIcon} alt="Folder" style={iconStyle} className={cls} />;
+
 };

@@ -1,24 +1,24 @@
-export type FolderIconType = 
-  | 'folder' 
-  | 'code' 
-  | 'briefcase' 
-  | 'sparkles' 
-  | 'image' 
-  | 'document' 
-  | 'shield' 
-  | 'terminal' 
-  | 'trash' 
+export type FolderIconType =
+  | 'folder'
+  | 'code'
+  | 'briefcase'
+  | 'sparkles'
+  | 'image'
+  | 'document'
+  | 'shield'
+  | 'terminal'
+  | 'trash'
   | 'star'
   | 'layer';
 
-export type FolderColor = 
-  | 'blue' 
-  | 'yellow' 
-  | 'purple' 
-  | 'emerald' 
-  | 'rose' 
-  | 'amber' 
-  | 'cyan' 
+export type FolderColor =
+  | 'blue'
+  | 'yellow'
+  | 'purple'
+  | 'emerald'
+  | 'rose'
+  | 'amber'
+  | 'cyan'
   | 'slate';
 
 export interface Folder {
@@ -61,19 +61,20 @@ export interface DesktopPosition {
   y: number;
 }
 
-export type WindowType = 
-  | 'folder' 
-  | 'project' 
-  | 'settings' 
-  | 'terminal' 
-  | 'about' 
-  | 'skills' 
-  | 'resume' 
-  | 'contact' 
-  | 'browser' 
-  | 'calculator' 
+export type WindowType =
+  | 'folder'
+  | 'project'
+  | 'settings'
+  | 'terminal'
+  | 'about'
+  | 'skills'
+  | 'resume'
+  | 'contact'
+  | 'browser'
+  | 'calculator'
   | 'notepad'
-  | 'add-folder' 
+  | 'file-explorer'
+  | 'add-folder'
   | 'add-project';
 
 export interface WindowItem {
@@ -90,6 +91,17 @@ export interface WindowItem {
   desktopId?: number;
   notepadContent?: string;
   browserUrl?: string;
+  /** Current snap state: half-screen left, half-screen right, or none */
+  snap?: 'left' | 'right' | null;
+  /** Geometry to restore when un-maximizing / unsnapping */
+  restoreBounds?: {
+    position: DesktopPosition;
+    size: { width: number; height: number };
+  } | null;
+  /** Light-themed window chrome (used by Settings & File Explorer) */
+  lightChrome?: boolean;
+  /** File Explorer navigation location (folder id or virtual location) */
+  explorerLocation?: string;
 }
 
 export interface Wallpaper {
@@ -106,6 +118,7 @@ export interface DeveloperProfile {
   name: string;
   role: string;
   bio: string;
+  value: string;
   avatarUrl: string;
   github: string;
   linkedin: string;

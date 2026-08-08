@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --win11-accent: #0078D4;
+  --win11-accent: #d43100;
   --win11-accent-hover: #106EBE;
   --win11-bg: rgba(32, 32, 32, 0.85);
   --win11-surface: rgba(44, 44, 44, 0.95);
   --win11-border: rgba(255, 255, 255, 0.08);
   --win11-text: rgba(255, 255, 255, 0.9);
   --win11-text-secondary: rgba(255, 255, 255, 0.6);
-  --win11-taskbar-height: 48px;
+  --win11-taskbar-height: 40px;
   --win11-font: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
 }
 
@@ -35,13 +35,16 @@ body {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.35);
 }
@@ -51,18 +54,36 @@ body {
   background: #C42B1C !important;
   color: white !important;
 }
+
 .win11-btn-maximize:hover,
 .win11-btn-minimize:hover {
   background: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Snap layout preview zones */
-.snap-zone {
-  position: fixed;
-  background: rgba(0, 120, 212, 0.3);
-  border: 2px solid rgba(0, 120, 212, 0.8);
-  border-radius: 8px;
-  pointer-events: none;
-  z-index: 9999;
-  transition: all 0.15s ease;
+/* ── Windows 11 Fluent surfaces ── */
+.win11-acrylic {
+  background: rgba(32, 32, 32, 0.72);
+  backdrop-filter: blur(40px) saturate(160%);
+  -webkit-backdrop-filter: blur(40px) saturate(160%);
 }
+
+.win11-mica {
+  background: linear-gradient(180deg, rgba(60, 62, 66, 0.85) 0%, rgba(43, 45, 49, 0.92) 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* Window drop shadow (Fluent elevation) */
+.win11-window-shadow {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 32px 64px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Resize cursor per handle direction */
+.win11-resize-n { cursor: n-resize; }
+.win11-resize-s { cursor: s-resize; }
+.win11-resize-e { cursor: e-resize; }
+.win11-resize-w { cursor: w-resize; }
+.win11-resize-ne { cursor: ne-resize; }
+.win11-resize-nw { cursor: nw-resize; }
+.win11-resize-se { cursor: se-resize; }
+.win11-resize-sw { cursor: sw-resize; }
