@@ -50,6 +50,7 @@ import { TerminalWindow } from './components/TerminalWindow';
 import { SettingsApp } from './components/SettingsApp';
 import { StartMenu } from './components/StartMenu';
 import { Taskbar } from './components/Taskbar';
+import { TaskView } from './components/TaskView';
 import { AboutMeWindow } from './components/AboutMeWindow';
 import { SkillsWindow } from './components/SkillsWindow';
 import { ResumeWindow } from './components/ResumeWindow';
@@ -61,8 +62,8 @@ import { SearchPanel } from './components/SearchPanel';
 import { FileExplorerApp } from './components/FileExplorerApp';
 
 const STORAGE_KEYS = {
-  FOLDERS: 'portfolio_os_folders_v1',
-  PROJECTS: 'portfolio_os_projects_v1',
+  FOLDERS: 'portfolio_os_folders_v2',
+  PROJECTS: 'portfolio_os_projects_v2',
   WALLPAPER: 'portfolio_os_wallpaper_v2',
   PROFILE: 'portfolio_os_profile_v2',
 };
@@ -125,6 +126,7 @@ export default function App() {
   const [selectedDesktopId, setSelectedDesktopId] = useState<string | null>(null);
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isTaskViewOpen, setIsTaskViewOpen] = useState(false);
 
   // Desktop Context Menu (Right Click)
   const [desktopContextMenu, setDesktopContextMenu] = useState<{ x: number; y: number } | null>(null);
@@ -141,12 +143,16 @@ export default function App() {
   // Project Modal State
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
-  const [defaultProjectFolderId, setDefaultProjectFolderId] = useState<string>('folder-web-apps');
+  const [defaultProjectFolderId, setDefaultProjectFolderId] = useState<string>('folder-other-projects');
 
   // Global keyboard shortcuts: ESC closes overlays, Windows key toggles Start Menu
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        if (isTaskViewOpen) {
+          setIsTaskViewOpen(false);
+          return;
+        }
         setIsSearchOpen(true);
         setIsStartMenuOpen(true);
         return;
@@ -158,7 +164,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isTaskViewOpen]);
 
   // Sync to LocalStorage
   useEffect(() => {
@@ -175,6 +181,12 @@ export default function App() {
   }, [profile]);
 
   // ── Window Manager helpers ──
+  const toggleTaskView = () => {
+    setIsStartMenuOpen(false);
+    setIsSearchOpen(false);
+    setIsTaskViewOpen((prev) => !prev);
+  };
+
   const focusWindow = (id: string) => {
     setActiveWindowId(id);
     const nextZ = topZIndex + 1;
@@ -460,7 +472,7 @@ export default function App() {
       case 'settings': openSettingsWindow(); break;
       case 'terminal': openTerminalWindow(); break;
       case 'browser': openBrowserWindow(); break;
-      case 'projects': openFolderWindow('folder-web-apps'); break;
+      case 'projects': openFolderWindow('folder-other-projects'); break;
       case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
       case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
       default: openAppWindow(id as WindowType);
@@ -522,7 +534,7 @@ export default function App() {
     }
   };
 
-  const handleOpenAddProject = (folderId: string = 'folder-web-apps') => {
+  const handleOpenAddProject = (folderId: string = 'folder-other-projects') => {
     setProjectToEdit(null);
     setDefaultProjectFolderId(folderId);
     setIsProjectModalOpen(true);
@@ -583,12 +595,13 @@ export default function App() {
     );
   }
 
+  // Windows 11 desktop grid: even rows/columns, enough room for icon + 2-line label
   const gridClass =
     desktopIconSize === 'large'
-      ? 'grid-rows-[repeat(auto-fill,92px)] auto-cols-[104px]'
+      ? 'grid-rows-[repeat(auto-fill,114px)] auto-cols-[120px]'
       : desktopIconSize === 'small'
-        ? 'grid-rows-[repeat(auto-fill,64px)] auto-cols-[76px]'
-        : 'grid-rows-[repeat(auto-fill,78px)] auto-cols-[88px]';
+        ? 'grid-rows-[repeat(auto-fill,88px)] auto-cols-[92px]'
+        : 'grid-rows-[repeat(auto-fill,100px)] auto-cols-[108px]';
 
   const shortcutAction = (id: string) => {
     switch (id) {
@@ -603,7 +616,7 @@ export default function App() {
       case 'videos': openFileExplorerWindow('videos'); break;
       case 'recycle-bin': openFileExplorerWindow('recycle-bin'); break;
       case 'resume': openAppWindow('resume'); break;
-      case 'projects': openFolderWindow('folder-web-apps'); break;
+      case 'projects': openFolderWindow('folder-other-projects'); break;
       case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
       case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
       default: break;
@@ -631,7 +644,7 @@ export default function App() {
       {/* Desktop icons (top-to-bottom grid, Windows spacing) */}
       {showDesktopIcons && (
         <div
-          className={`absolute top-3 left-3 z-10 grid grid-flow-col gap-x-1 gap-y-2 max-h-[calc(100vh-52px)] overflow-hidden pointer-events-auto ${gridClass}`}
+          className={`absolute top-2 left-3 z-10 grid grid-flow-col gap-x-1.5 gap-y-1.5 max-h-[calc(100vh-52px)] overflow-hidden pointer-events-auto ${gridClass}`}
         >
 
 
@@ -726,7 +739,7 @@ export default function App() {
                     profile={profile}
                     onOpenFolder={openFolderWindow}
                     onOpenAddFolderModal={() => handleOpenAddFolder(null)}
-                    onOpenAddProjectModal={() => handleOpenAddProject('folder-web-apps')}
+                    onOpenAddProjectModal={() => handleOpenAddProject('folder-other-projects')}
                   />
                 )}
 
@@ -891,7 +904,7 @@ export default function App() {
                   <span>Folder</span>
                 </button>
                 <button
-                  onClick={() => { handleOpenAddProject('folder-web-apps'); setDesktopContextMenu(null); setSubmenu(null); }}
+                  onClick={() => { handleOpenAddProject('folder-other-projects'); setDesktopContextMenu(null); setSubmenu(null); }}
                   className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"
                 >
                   <Sparkles className="w-4 h-4 text-blue-400" />
@@ -937,6 +950,19 @@ export default function App() {
         onOpenApp={launchApp}
       />
 
+      {/* Task View */}
+      <TaskView
+        isOpen={isTaskViewOpen}
+        windows={windows}
+        activeWindowId={activeWindowId}
+        icons={WINDOW_ICONS}
+        onClose={() => setIsTaskViewOpen(false)}
+        onSelectWindow={(win) => {
+          focusWindow(win.id);
+          setIsTaskViewOpen(false);
+        }}
+      />
+
       {/* Taskbar */}
       <Taskbar
         windows={windows}
@@ -957,6 +983,8 @@ export default function App() {
         onOpenFileExplorer={() => openFileExplorerWindow('this-pc')}
         onOpenBrowser={() => openBrowserWindow()}
         onOpenSearch={() => setIsSearchOpen(true)}
+        onToggleTaskView={toggleTaskView}
+        isTaskViewOpen={isTaskViewOpen}
       />
 
       {/* Search Panel */}

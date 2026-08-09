@@ -1,9 +1,10 @@
 import express from "express";
+import http from "http";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 
 const app = express();
-const PORT = 3000;
+const PORT = 24678;
 
 app.use(express.json());
 
@@ -30,10 +31,46 @@ let foldersData = [
     createdAt: new Date().toISOString(),
   },
   {
-    id: "folder-web-apps",
-    name: "Projects",
-    description: "Featured web applications & full-stack open source projects",
+    id: "folder-food-delivery",
+    name: "Food Delivery Management System",
+    description: "Full-stack food ordering backend with auth, restaurants & order processing",
+    icon: "code",
+    color: "blue",
+    parentId: null,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "folder-ai-resource",
+    name: "AI Smart Resource Management System",
+    description: "AI-driven resource allocation with role-based access control",
+    icon: "sparkles",
+    color: "purple",
+    parentId: null,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "folder-self-tracker",
+    name: "Self Tracker Analytics System",
+    description: "Personal analytics & ML insights from Google Takeout data",
     icon: "briefcase",
+    color: "emerald",
+    parentId: null,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "folder-socket-server",
+    name: "Socket Programming Web Server",
+    description: "HTTP web server built from scratch with raw C++ sockets",
+    icon: "terminal",
+    color: "cyan",
+    parentId: null,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "folder-other-projects",
+    name: "Other Projects",
+    description: "Additional experiments, concepts, and works in progress",
+    icon: "layer",
     color: "amber",
     parentId: null,
     createdAt: new Date().toISOString(),
@@ -75,7 +112,7 @@ let projectsData = [
     description: "Backend system with authentication, restaurant management, and order processing, built with Spring Boot and PostgreSQL using a layered architecture.",
     techStack: ["Java 17", "Spring Boot", "Spring Security", "JWT", "PostgreSQL"],
     imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80",
-    folderId: "folder-web-apps",
+    folderId: "folder-food-delivery",
     featured: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -87,7 +124,7 @@ let projectsData = [
     description: "Resource allocation system for university operations with role-based access control and AI-driven decision-making logic.",
     techStack: ["Node.js", "Express.js", "MongoDB", "Role-Based Access Control", "AI Decision Logic"],
     imageUrl: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&auto=format&fit=crop&q=80",
-    folderId: "folder-web-apps",
+    folderId: "folder-ai-resource",
     featured: true,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -99,7 +136,7 @@ let projectsData = [
     description: "Personal analytics platform using Google Takeout data; applied data cleaning, visualization, and machine learning with Pandas, NumPy, and Scikit-learn.",
     techStack: ["Python", "Pandas", "NumPy", "Scikit-learn", "Matplotlib"],
     imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80",
-    folderId: "folder-web-apps",
+    folderId: "folder-self-tracker",
     featured: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -111,7 +148,7 @@ let projectsData = [
     description: "HTTP web server built with raw socket programming, implementing request/response handling from the ground up.",
     techStack: ["C++", "POSIX Sockets", "TCP/IP", "HTTP/1.1"],
     imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=80",
-    folderId: "folder-web-apps",
+    folderId: "folder-socket-server",
     featured: false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -163,9 +200,16 @@ app.post("/api/projects", (req, res) => {
 
 // Vite Middleware Setup for Dev & Prod
 async function startServer() {
+  // Create the HTTP server first so Vite's HMR WebSocket can bind to its
+  // 'upgrade' event (required for HMR to work in middleware mode).
+  const httpServer = http.createServer(app);
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: { server: httpServer },
+      },
       appType: "spa",
     });
     app.use(vite.middlewares);
@@ -177,7 +221,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`Backend server running on http://0.0.0.0:${PORT}`);
   });
 }

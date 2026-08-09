@@ -33,7 +33,7 @@ export const DEFAULT_DESKTOP_ICONS: DesktopIconConfig[] = [
     iconName: 'briefcase',
     color: 'amber',
     description: 'Interactive portfolio showcase with project thumbnails and live links',
-    targetWindowId: 'folder-web-apps',
+    targetWindowId: 'folder-other-projects',
   },
   {
     id: 'app-skills',

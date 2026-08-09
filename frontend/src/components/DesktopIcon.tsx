@@ -52,7 +52,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
 
   const containerSize = size === 'large' ? 60 : size === 'small' ? 44 : 52;
   const iconSize = size === 'large' ? 52 : size === 'small' ? 36 : 44;
-  const wrapperWidth = size === 'large' ? 96 : size === 'small' ? 72 : 80;
+  const wrapperWidth = size === 'large' ? 114 : size === 'small' ? 86 : 102;
 
   return (
     <>
@@ -93,7 +93,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
             fontSize: 11,
             fontFamily: '"Segoe UI", Inter, system-ui, sans-serif',
             fontWeight: isSelected ? 600 : 400,
-            maxWidth: wrapperWidth - 4,
+            maxWidth: wrapperWidth - 8,
             wordBreak: 'break-word',
             overflow: 'hidden',
             display: '-webkit-box',
