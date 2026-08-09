@@ -17,6 +17,7 @@ import { WindowItem } from '../types';
 import { QuickSettingsFlyout } from './QuickSettingsFlyout';
 import { CalendarFlyout } from './CalendarFlyout';
 import { NotificationsFlyout } from './NotificationsFlyout';
+import { WeatherWidget } from './WeatherWidget';
 
 interface TaskbarProps {
   onOpenFileExplorer: () => void;
@@ -24,6 +25,8 @@ interface TaskbarProps {
   onOpenTerminal: () => void;
   onOpenSettings: () => void;
   onOpenSearch: () => void;
+  onToggleTaskView: () => void;
+  isTaskViewOpen?: boolean;
   windows: WindowItem[];
   activeWindowId: string | null;
   isStartMenuOpen: boolean;
@@ -132,6 +135,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onToggleStartMenu,
   onWindowClick,
   onOpenFileExplorer,
+  onToggleTaskView,
+  isTaskViewOpen,
 }) => {
   const [time, setTime] = useState('');
   const [date, setDate] = useState('');
@@ -185,6 +190,14 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     setActiveFlyout(null);
     onToggleStartMenu();
   };
+
+  // Matches a window to a pinned app (e.g. app-settings <-> Settings pin)
+  const matchesPinnedApp = (win: WindowItem, app: PinnedApp) =>
+    win.id.includes(app.id.replace('taskbar-pin-', ''));
+
+  // True when a window belongs to any pinned app
+  const isPinnedAppWindow = (win: WindowItem) =>
+    pinnedApps.some((app) => matchesPinnedApp(win, app));
 
   const pinnedApps: PinnedApp[] = [
     {
@@ -271,6 +284,11 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           borderTop: '1px solid rgba(255,255,255,0.06)',
         }}
       >
+        {/* ── LEFT: Weather widget ── */}
+        <div className="absolute left-0 flex items-center h-full" style={{ paddingLeft: 6 }}>
+          <WeatherWidget />
+        </div>
+
         {/* ── CENTER CLUSTER ── */}
         <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-0.5">
           {/* Start button */}
@@ -314,12 +332,23 @@ export const Taskbar: React.FC<TaskbarProps> = ({
               Search
             </span>
           </motion.button>
-
-          <div className="w-px h-5 bg-white/10 mx-1.5" />
+          <TaskbarIcon
+            id="taskbar-btn-taskview"
+            onClick={onToggleTaskView}
+            title="Task View"
+            isActive={isTaskViewOpen}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Background overlapping window */}
+              <rect x="2" y="2" width="10" height="10" rx="1.5" fill="rgba(255, 255, 255, 0.12)" stroke="rgba(255, 255, 255, 0.65)" strokeWidth="1.2" />
+              {/* Foreground active window */}
+              <rect x="6" y="6" width="10" height="10" rx="1.5" fill="rgba(255, 255, 255, 0.3)" stroke="rgba(255, 255, 255, 0.9)" strokeWidth="1.2" />
+            </svg>
+          </TaskbarIcon>
 
           {/* Pinned apps */}
           {pinnedApps.map((app) => {
-            const runningWin = windows.find((w) => w.id.includes(app.id.replace('taskbar-pin-', '')));
+            const runningWin = windows.find((w) => matchesPinnedApp(w, app));
             const isActive = runningWin ? activeWindowId === runningWin.id && !runningWin.isMinimized : false;
             return (
               <TaskbarIcon
@@ -335,13 +364,13 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             );
           })}
 
-          <div className="w-px h-5 bg-white/10 mx-1.5" />
-
-          {/* Open window tabs */}
-          {windows.map((win) => {
-            const isActive = activeWindowId === win.id && !win.isMinimized;
-            return (
-              <div key={win.id} className="relative flex flex-col items-center justify-center">
+          {/* Open window tabs — only for windows not already represented by a pinned icon */}
+          {windows
+            .filter((win) => !isPinnedAppWindow(win))
+            .map((win) => {
+              const isActive = activeWindowId === win.id && !win.isMinimized;
+              return (
+                <div key={win.id} className="relative flex flex-col items-center justify-center">
                 <motion.button
                   id={`taskbar-win-${win.id}`}
                   onClick={() => onWindowClick(win)}
@@ -365,18 +394,18 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                 >
                   <FolderOpen className="w-3.5 h-3.5 shrink-0" style={{ color: '#FDB44B' }} />
                   <span className="truncate">{win.title}</span>
-                </motion.button>
-                <div
-                  className="absolute bottom-[3px] rounded-full transition-all"
-                  style={{
-                    height: 3,
-                    width: isActive ? 16 : 6,
-                    background: isActive ? '#4FC3F7' : 'rgba(255,255,255,0.4)',
-                  }}
-                />
-              </div>
-            );
-          })}
+                  </motion.button>
+                  <div
+                    className="absolute bottom-[3px] rounded-full transition-all"
+                    style={{
+                      height: 3,
+                      width: isActive ? 16 : 6,
+                      background: isActive ? '#4FC3F7' : 'rgba(255,255,255,0.4)',
+                    }}
+                  />
+                </div>
+              );
+            })}
         </div>
 
         {/* ── RIGHT: System tray ── */}
