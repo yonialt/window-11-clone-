@@ -67,8 +67,8 @@ export const DEFAULT_DESKTOP_ICONS: DesktopIconConfig[] = [
 
 // Start menu branding setting
 export const START_MENU_CONFIG = {
-  brandingName: 'Yonathan Altaye',
-  brandingSubtext: 'Full Stack Engineer & UI Architect',
+  brandingName: 'Yonatan Altaye',
+  brandingSubtext: 'Software Engineer | Network & System Admin',
   logoText: 'YA',
 };
 

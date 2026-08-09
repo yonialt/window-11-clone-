@@ -15,6 +15,7 @@ interface SearchPanelProps {
 }
 
 const APP_ITEMS = [
+  { id: 'file-explorer', label: 'File Explorer', icon: Folder, color: '#FDB44B' },
   { id: 'terminal', label: 'Command Prompt', icon: Terminal, color: '#69F0AE' },
   { id: 'settings', label: 'Settings', icon: Settings, color: '#BDBDBD' },
   { id: 'browser', label: 'Microsoft Edge', icon: Globe, color: '#4FC3F7' },

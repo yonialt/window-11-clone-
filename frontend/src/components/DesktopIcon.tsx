@@ -14,6 +14,7 @@ interface DesktopIconProps {
   onAddFolderClick?: () => void;
   onRename?: (folder: FolderType) => void;
   onDelete?: (folderId: string) => void;
+  size?: 'small' | 'medium' | 'large';
 }
 
 export const DesktopIcon: React.FC<DesktopIconProps> = ({
@@ -26,6 +27,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
   onAddFolderClick,
   onRename,
   onDelete,
+  size = 'medium',
 }) => {
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
 
@@ -48,6 +50,10 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
 
   const name = isAddFolderShortcut ? 'Add Folder' : folder?.name ?? '';
 
+  const containerSize = size === 'large' ? 60 : size === 'small' ? 44 : 52;
+  const iconSize = size === 'large' ? 52 : size === 'small' ? 36 : 44;
+  const wrapperWidth = size === 'large' ? 96 : size === 'small' ? 72 : 80;
+
   return (
     <>
       <motion.div
@@ -55,7 +61,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
         onClick={isAddFolderShortcut ? onAddFolderClick : handleClick}
         onContextMenu={handleContextMenu}
         className="relative flex flex-col items-center justify-start cursor-pointer select-none"
-        style={{ width: 80, paddingTop: 6, paddingBottom: 4 }}
+        style={{ width: wrapperWidth, paddingTop: 6, paddingBottom: 4 }}
         whileHover={{ scale: 1.06 }}
         whileTap={{ scale: 0.94 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
@@ -64,8 +70,8 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
         <motion.div
           className="relative flex items-center justify-center"
           style={{
-            width: 52,
-            height: 52,
+            width: containerSize,
+            height: containerSize,
             borderRadius: 6,
             background: isSelected ? 'rgba(0, 120, 212, 0.25)' : 'transparent',
             boxShadow: isSelected
@@ -77,7 +83,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
           }}
           transition={{ duration: 0.12 }}
         >
-          <Win11Icon name={isAddFolderShortcut ? 'add folder' : (folder?.name ?? '')} size={44} />
+          <Win11Icon name={isAddFolderShortcut ? 'add folder' : (folder?.name ?? '')} size={iconSize} />
         </motion.div>
 
         {/* Label */}
@@ -87,7 +93,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
             fontSize: 11,
             fontFamily: '"Segoe UI", Inter, system-ui, sans-serif',
             fontWeight: isSelected ? 600 : 400,
-            maxWidth: 76,
+            maxWidth: wrapperWidth - 4,
             wordBreak: 'break-word',
             overflow: 'hidden',
             display: '-webkit-box',

@@ -159,11 +159,10 @@ export const FolderModal: React.FC<FolderModalProps> = ({
                   key={opt.type}
                   type="button"
                   onClick={() => setIcon(opt.type)}
-                  className={`flex flex-col items-center justify-center p-2 rounded-lg border text-[10px] transition-all ${
-                    icon === opt.type
+                  className={`flex flex-col items-center justify-center p-2 rounded-lg border text-[10px] transition-all ${icon === opt.type
                       ? 'bg-amber-500/20 text-amber-300 border-amber-400 shadow-sm'
                       : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-                  }`}
+                    }`}
                 >
                   {getFolderIconComponent(opt.type, 'w-4 h-4 mb-1')}
                   <span className="truncate max-w-full">{opt.label}</span>
@@ -183,9 +182,8 @@ export const FolderModal: React.FC<FolderModalProps> = ({
                   key={c.color}
                   type="button"
                   onClick={() => setColor(c.color)}
-                  className={`relative flex items-center justify-center w-7 h-7 rounded-full border transition-transform ${
-                    color === c.color ? 'scale-110 ring-2 ring-white border-transparent' : 'border-slate-700 hover:scale-105'
-                  }`}
+                  className={`relative flex items-center justify-center w-7 h-7 rounded-full border transition-transform ${color === c.color ? 'scale-110 ring-2 ring-white border-transparent' : 'border-slate-700 hover:scale-105'
+                    }`}
                   style={{ backgroundColor: c.hex }}
                   title={c.name}
                 >

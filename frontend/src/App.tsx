@@ -1,43 +1,88 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Folder as FolderType, 
-  Project, 
-  WindowItem, 
-  Wallpaper, 
-  DeveloperProfile 
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Folder as FolderType,
+  Project,
+  WindowItem,
+  Wallpaper,
+  DeveloperProfile,
+  DesktopPosition,
+  WindowType,
 } from './types';
-import { 
-  INITIAL_FOLDERS, 
-  INITIAL_PROJECTS, 
-  WALLPAPERS, 
-  INITIAL_PROFILE 
+import {
+  INITIAL_FOLDERS,
+  INITIAL_PROJECTS,
+  WALLPAPERS,
+  INITIAL_PROFILE,
 } from './data/initialData';
+import {
+  FolderPlus,
+  Plus,
+  Terminal as TerminalIcon,
+  Settings,
+  Sparkles,
+  RefreshCw,
+  Grid,
+  ArrowUpDown,
+  ChevronRight,
+  Monitor,
+  Palette,
+  Check,
+  Folder,
+  FolderOpen,
+  Code,
+  User,
+  Award,
+  FileText,
+  Mail,
+  Globe,
+  Calculator,
+  StickyNote,
+  Terminal,
+} from 'lucide-react';
 import { DesktopIcon } from './components/DesktopIcon';
-import { WindowFrame } from './components/WindowFrame';
-import { FileExplorer } from './components/FileExplorer';
+import { DESKTOP_SHORTCUTS } from './config/desktopShortcuts';
+import { Window } from './components/Window';
 import { ProjectDetailView } from './components/ProjectDetailView';
 import { FolderModal } from './components/FolderModal';
 import { ProjectModal } from './components/ProjectModal';
 import { TerminalWindow } from './components/TerminalWindow';
-import { SettingsWindow } from './components/SettingsWindow';
+import { SettingsApp } from './components/SettingsApp';
 import { StartMenu } from './components/StartMenu';
 import { Taskbar } from './components/Taskbar';
-import { 
-  FolderPlus, 
-  Plus, 
-  Terminal as TerminalIcon, 
-  Settings, 
-  Sparkles, 
-  RefreshCw, 
-  X,
-  Layers
-} from 'lucide-react';
+import { AboutMeWindow } from './components/AboutMeWindow';
+import { SkillsWindow } from './components/SkillsWindow';
+import { ResumeWindow } from './components/ResumeWindow';
+import { ContactWindow } from './components/ContactWindow';
+import { BrowserWindow } from './components/BrowserWindow';
+import { CalculatorWindow } from './components/CalculatorWindow';
+import { NotepadWindow } from './components/NotepadWindow';
+import { SearchPanel } from './components/SearchPanel';
+import { FileExplorerApp } from './components/FileExplorerApp';
 
 const STORAGE_KEYS = {
   FOLDERS: 'portfolio_os_folders_v1',
   PROJECTS: 'portfolio_os_projects_v1',
   WALLPAPER: 'portfolio_os_wallpaper_v2',
-  PROFILE: 'portfolio_os_profile_v1',
+  PROFILE: 'portfolio_os_profile_v2',
+};
+
+const DEFAULT_BROWSER_URL = 'https://www.google.com/webhp?igu=1';
+
+// Per-app title bar icons (Fluent style)
+const WINDOW_ICONS: Record<string, React.ReactNode> = {
+  folder: <Folder className="w-4 h-4 text-amber-400" />,
+  project: <Code className="w-4 h-4 text-blue-400" />,
+  settings: <Settings className="w-4 h-4 text-slate-400" />,
+  terminal: <Terminal className="w-4 h-4 text-emerald-400" />,
+  about: <User className="w-4 h-4 text-blue-400" />,
+  skills: <Award className="w-4 h-4 text-amber-400" />,
+  resume: <FileText className="w-4 h-4 text-emerald-400" />,
+  contact: <Mail className="w-4 h-4 text-purple-400" />,
+  browser: <Globe className="w-4 h-4 text-sky-400" />,
+  calculator: <Calculator className="w-4 h-4 text-rose-400" />,
+  notepad: <StickyNote className="w-4 h-4 text-yellow-400" />,
+  'file-explorer': <FolderOpen className="w-4 h-4 text-amber-400" />,
 };
 
 export default function App() {
@@ -58,9 +103,7 @@ export default function App() {
       try {
         const parsed = JSON.parse(saved);
         const matched = WALLPAPERS.find((w) => w.id === parsed.id);
-        if (matched) {
-          return matched;
-        }
+        if (matched) return matched;
       } catch (e) {
         console.error(e);
       }
@@ -79,12 +122,16 @@ export default function App() {
   const [topZIndex, setTopZIndex] = useState(10);
 
   // UI Popups & Modals State
-  const [selectedDesktopFolderId, setSelectedDesktopFolderId] = useState<string | null>(null);
+  const [selectedDesktopId, setSelectedDesktopId] = useState<string | null>(null);
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
-  const [isTaskViewOpen, setIsTaskViewOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   // Desktop Context Menu (Right Click)
   const [desktopContextMenu, setDesktopContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [desktopIconSize, setDesktopIconSize] = useState<'small' | 'medium' | 'large'>('medium');
+  const [showDesktopIcons, setShowDesktopIcons] = useState<boolean>(true);
+  const [desktopSortBy, setDesktopSortBy] = useState<'name' | 'date' | null>(null);
+  const [submenu, setSubmenu] = useState<'view' | 'sort' | 'new' | null>(null);
 
   // Folder Modal State
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -96,24 +143,38 @@ export default function App() {
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
   const [defaultProjectFolderId, setDefaultProjectFolderId] = useState<string>('folder-web-apps');
 
+  // Global keyboard shortcuts: ESC closes overlays, Windows key toggles Start Menu
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsSearchOpen(true);
+        setIsStartMenuOpen(true);
+        return;
+      }
+      if (e.key === 'Meta') {
+        e.preventDefault();
+        setIsStartMenuOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Sync to LocalStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.FOLDERS, JSON.stringify(folders));
   }, [folders]);
-
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(projects));
   }, [projects]);
-
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.WALLPAPER, JSON.stringify(currentWallpaper));
   }, [currentWallpaper]);
-
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
   }, [profile]);
 
-  // Window Focus Handler
+  // ── Window Manager helpers ──
   const focusWindow = (id: string) => {
     setActiveWindowId(id);
     const nextZ = topZIndex + 1;
@@ -123,70 +184,101 @@ export default function App() {
     );
   };
 
-  // Open Folder Window
+  const closeWindow = (id: string) => {
+    setWindows((prev) => prev.filter((w) => w.id !== id));
+    if (activeWindowId === id) {
+      const remaining = windows.filter((w) => w.id !== id);
+      setActiveWindowId(remaining.length > 0 ? remaining[remaining.length - 1].id : null);
+    }
+  };
+
+  const toggleMinimizeWindow = (id: string) => {
+    setWindows((prev) => prev.map((w) => (w.id === id ? { ...w, isMinimized: !w.isMinimized } : w)));
+  };
+
+  const toggleMaximizeWindow = (id: string) => {
+    setWindows((prev) =>
+      prev.map((w) => (w.id === id ? { ...w, isMaximized: !w.isMaximized, snap: null } : w))
+    );
+  };
+
+  const handleSnap = (id: string, snap: 'left' | 'right' | null) => {
+    setWindows((prev) =>
+      prev.map((w) => (w.id === id ? { ...w, snap, isMaximized: snap ? false : w.isMaximized } : w))
+    );
+  };
+
+  // Remember live window geometry (drag/resize end, before maximize/snap)
+  const handleBoundsChange = (
+    id: string,
+    bounds: { position: DesktopPosition; size: { width: number; height: number } }
+  ) => {
+    setWindows((prev) =>
+      prev.map((w) =>
+        w.id === id ? { ...w, position: bounds.position, size: bounds.size, restoreBounds: bounds } : w
+      )
+    );
+  };
+
+  // ── Window launchers ──
   const openFolderWindow = (folderId: string) => {
     const targetFolder = folders.find((f) => f.id === folderId);
     if (!targetFolder) return;
-
     const windowId = `folder-${folderId}`;
     const existing = windows.find((w) => w.id === windowId);
-
     if (existing) {
       focusWindow(windowId);
       return;
     }
-
     const nextZ = topZIndex + 1;
     setTopZIndex(nextZ);
-
     const offset = (windows.length % 5) * 24;
-    const newWindow: WindowItem = {
-      id: windowId,
-      type: 'folder',
-      targetId: folderId,
-      title: targetFolder.name,
-      isMinimized: false,
-      isMaximized: false,
-      zIndex: nextZ,
-      position: { x: 80 + offset, y: 60 + offset },
-      size: { width: 780, height: 520 },
-    };
-
-    setWindows((prev) => [...prev, newWindow]);
+    setWindows((prev) => [
+      ...prev,
+      {
+        id: windowId,
+        type: 'folder',
+        targetId: folderId,
+        title: targetFolder.name,
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: nextZ,
+        position: { x: 100 + offset, y: 60 + offset },
+        size: { width: 900, height: 600 },
+        lightChrome: true,
+        explorerLocation: folderId,
+      },
+    ]);
     setActiveWindowId(windowId);
   };
 
-  // Open Project Detail Window
   const openProjectWindow = (project: Project) => {
     const windowId = `project-${project.id}`;
     const existing = windows.find((w) => w.id === windowId);
-
     if (existing) {
       focusWindow(windowId);
       return;
     }
-
     const nextZ = topZIndex + 1;
     setTopZIndex(nextZ);
-
     const offset = (windows.length % 5) * 24;
-    const newWindow: WindowItem = {
-      id: windowId,
-      type: 'project',
-      targetId: project.id,
-      title: project.title,
-      isMinimized: false,
-      isMaximized: false,
-      zIndex: nextZ,
-      position: { x: 120 + offset, y: 80 + offset },
-      size: { width: 840, height: 560 },
-    };
-
-    setWindows((prev) => [...prev, newWindow]);
+    setWindows((prev) => [
+      ...prev,
+      {
+        id: windowId,
+        type: 'project',
+        targetId: project.id,
+        title: project.title,
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: nextZ,
+        position: { x: 140 + offset, y: 80 + offset },
+        size: { width: 840, height: 560 },
+      },
+    ]);
     setActiveWindowId(windowId);
   };
 
-  // Open Terminal Window
   const openTerminalWindow = () => {
     const windowId = 'app-terminal';
     const existing = windows.find((w) => w.id === windowId);
@@ -206,14 +298,13 @@ export default function App() {
         isMinimized: false,
         isMaximized: false,
         zIndex: nextZ,
-        position: { x: 160, y: 100 },
-        size: { width: 680, height: 420 },
+        position: { x: 160, y: 90 },
+        size: { width: 720, height: 440 },
       },
     ]);
     setActiveWindowId(windowId);
   };
 
-  // Open Settings Window
   const openSettingsWindow = () => {
     const windowId = 'app-settings';
     const existing = windows.find((w) => w.id === windowId);
@@ -223,50 +314,166 @@ export default function App() {
     }
     const nextZ = topZIndex + 1;
     setTopZIndex(nextZ);
+    const width = Math.min(1100, window.innerWidth * 0.75);
+    const height = Math.min(750, window.innerHeight * 0.75);
     setWindows((prev) => [
       ...prev,
       {
         id: windowId,
         type: 'settings',
         targetId: null,
-        title: 'Windows Personalization & Developer Settings',
+        title: 'Settings',
         isMinimized: false,
         isMaximized: false,
         zIndex: nextZ,
-        position: { x: 180, y: 120 },
-        size: { width: 640, height: 500 },
+        position: { x: Math.max(20, (window.innerWidth - width) / 2 - 80), y: 60 },
+        size: { width, height },
+        lightChrome: true,
       },
     ]);
     setActiveWindowId(windowId);
   };
 
-  // Close Window
-  const closeWindow = (id: string) => {
-    setWindows((prev) => prev.filter((w) => w.id !== id));
-    if (activeWindowId === id) {
-      const remaining = windows.filter((w) => w.id !== id);
-      if (remaining.length > 0) {
-        setActiveWindowId(remaining[remaining.length - 1].id);
-      } else {
-        setActiveWindowId(null);
-      }
+  const openFileExplorerWindow = (location: string = 'this-pc') => {
+    const windowId = 'app-file-explorer';
+    const existing = windows.find((w) => w.id === windowId);
+    if (existing) {
+      focusWindow(windowId);
+      setWindows((prev) =>
+        prev.map((w) =>
+          w.id === windowId
+            ? { ...w, explorerLocation: location, title: location === 'this-pc' ? 'File Explorer' : location }
+            : w
+        )
+      );
+      return;
+    }
+    const nextZ = topZIndex + 1;
+    setTopZIndex(nextZ);
+    const width = Math.min(1100, window.innerWidth * 0.8);
+    const height = Math.min(700, window.innerHeight * 0.75);
+    setWindows((prev) => [
+      ...prev,
+      {
+        id: windowId,
+        type: 'file-explorer',
+        targetId: null,
+        title: 'File Explorer',
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: nextZ,
+        position: { x: Math.max(20, (window.innerWidth - width) / 2), y: 50 },
+        size: { width, height },
+        lightChrome: true,
+        explorerLocation: location,
+      },
+    ]);
+    setActiveWindowId(windowId);
+  };
+
+  const openBrowserWindow = (url?: string) => {
+    const windowId = 'app-browser';
+    const targetUrl = url || DEFAULT_BROWSER_URL;
+    const existing = windows.find((w) => w.id === windowId);
+    if (existing) {
+      focusWindow(windowId);
+      setWindows((prev) =>
+        prev.map((w) => (w.id === windowId ? { ...w, browserUrl: targetUrl } : w))
+      );
+      return;
+    }
+    const nextZ = topZIndex + 1;
+    setTopZIndex(nextZ);
+    setWindows((prev) => [
+      ...prev,
+      {
+        id: windowId,
+        type: 'browser',
+        targetId: null,
+        title: '',
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: nextZ,
+        position: { x: 180, y: 70 },
+        size: { width: 980, height: 640 },
+        browserUrl: targetUrl,
+      },
+    ]);
+    setActiveWindowId(windowId);
+  };
+
+  const APP_WINDOW_CONFIG: Record<string, { title: string; size: { width: number; height: number } }> = {
+    about: { title: 'About Me', size: { width: 640, height: 540 } },
+    skills: { title: 'Skills', size: { width: 720, height: 580 } },
+    resume: { title: 'Resume', size: { width: 720, height: 620 } },
+    contact: { title: 'Contact', size: { width: 560, height: 560 } },
+    calculator: { title: 'Calculator', size: { width: 340, height: 520 } },
+    notepad: { title: 'Notepad', size: { width: 580, height: 500 } },
+  };
+
+  const openAppWindow = (type: WindowType) => {
+    if (type === 'file-explorer') {
+      openFileExplorerWindow('this-pc');
+      return;
+    }
+    const config = APP_WINDOW_CONFIG[type];
+    if (!config) return;
+    const windowId = `app-${type}`;
+    const existing = windows.find((w) => w.id === windowId);
+    if (existing) {
+      focusWindow(windowId);
+      return;
+    }
+    const nextZ = topZIndex + 1;
+    setTopZIndex(nextZ);
+    const offset = (windows.length % 5) * 24;
+    setWindows((prev) => [
+      ...prev,
+      {
+        id: windowId,
+        type,
+        targetId: null,
+        title: config.title,
+        isMinimized: false,
+        isMaximized: false,
+        zIndex: nextZ,
+        position: { x: 220 + offset, y: 90 + offset },
+        size: config.size,
+      },
+    ]);
+    setActiveWindowId(windowId);
+  };
+
+  // Unified app launcher used by Start Menu, Search, desktop shortcuts, Settings & File Explorer
+  const launchApp = (id: string) => {
+    if (id.startsWith('folder:')) {
+      openFolderWindow(id.slice(7));
+      return;
+    }
+    if (id.startsWith('project:')) {
+      const proj = projects.find((p) => p.id === id.slice(8));
+      if (proj) openProjectWindow(proj);
+      return;
+    }
+    switch (id) {
+      case 'file-explorer': openFileExplorerWindow(); break;
+      case 'settings': openSettingsWindow(); break;
+      case 'terminal': openTerminalWindow(); break;
+      case 'browser': openBrowserWindow(); break;
+      case 'projects': openFolderWindow('folder-web-apps'); break;
+      case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
+      case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
+      default: openAppWindow(id as WindowType);
     }
   };
 
-  // Minimize / Maximize Window
-  const toggleMinimizeWindow = (id: string) => {
+  const updateExplorerWindow = (windowId: string, location: string, title: string) => {
     setWindows((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, isMinimized: !w.isMinimized } : w))
+      prev.map((w) => (w.id === windowId ? { ...w, explorerLocation: location, title } : w))
     );
   };
 
-  const toggleMaximizeWindow = (id: string) => {
-    setWindows((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, isMaximized: !w.isMaximized } : w))
-    );
-  };
-
-  // Add / Edit Folder Operations
+  // ── Folder / Project CRUD ──
   const handleOpenAddFolder = (parentId: string | null = null) => {
     setFolderToEdit(null);
     setDefaultParentFolderId(parentId);
@@ -287,20 +494,13 @@ export default function App() {
     parentId: string | null;
   }) => {
     if (folderToEdit) {
-      // Update existing
-      setFolders((prev) =>
-        prev.map((f) =>
-          f.id === folderToEdit.id ? { ...f, ...folderData } : f
-        )
-      );
-      // Update open window title if open
+      setFolders((prev) => prev.map((f) => (f.id === folderToEdit.id ? { ...f, ...folderData } : f)));
       setWindows((prev) =>
         prev.map((w) =>
           w.id === `folder-${folderToEdit.id}` ? { ...w, title: folderData.name } : w
         )
       );
     } else {
-      // Create new folder
       const newFolder: FolderType = {
         id: `folder-${Date.now()}`,
         name: folderData.name,
@@ -311,7 +511,6 @@ export default function App() {
         createdAt: new Date().toISOString(),
       };
       setFolders((prev) => [...prev, newFolder]);
-      // Immediately open new folder window for convenience
       openFolderWindow(newFolder.id);
     }
   };
@@ -323,7 +522,6 @@ export default function App() {
     }
   };
 
-  // Add / Edit Project Operations
   const handleOpenAddProject = (folderId: string = 'folder-web-apps') => {
     setProjectToEdit(null);
     setDefaultProjectFolderId(folderId);
@@ -369,275 +567,382 @@ export default function App() {
     }
   };
 
-  // Handle Desktop Right Click
+  // ── Desktop ──
   const handleDesktopContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    setSelectedDesktopFolderId(null);
+    setSelectedDesktopId(null);
     setDesktopContextMenu({ x: e.clientX, y: e.clientY });
   };
 
-  // Filter root desktop folders (where parentId is null)
-  const rootDesktopFolders = folders.filter((f) => f.parentId === null);
+  let rootDesktopFolders = folders.filter((f) => f.parentId === null && !f.isSystem);
+  if (desktopSortBy === 'name') {
+    rootDesktopFolders = [...rootDesktopFolders].sort((a, b) => a.name.localeCompare(b.name));
+  } else if (desktopSortBy === 'date') {
+    rootDesktopFolders = [...rootDesktopFolders].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  }
+
+  const gridClass =
+    desktopIconSize === 'large'
+      ? 'grid-rows-[repeat(auto-fill,92px)] auto-cols-[104px]'
+      : desktopIconSize === 'small'
+        ? 'grid-rows-[repeat(auto-fill,64px)] auto-cols-[76px]'
+        : 'grid-rows-[repeat(auto-fill,78px)] auto-cols-[88px]';
+
+  const shortcutAction = (id: string) => {
+    switch (id) {
+      case 'this-pc':
+      case 'network':
+        openFileExplorerWindow('this-pc');
+        break;
+      case 'downloads': openFileExplorerWindow('downloads'); break;
+      case 'documents': openFileExplorerWindow('documents'); break;
+      case 'pictures': openFileExplorerWindow('pictures'); break;
+      case 'music': openFileExplorerWindow('music'); break;
+      case 'videos': openFileExplorerWindow('videos'); break;
+      case 'recycle-bin': openFileExplorerWindow('recycle-bin'); break;
+      case 'resume': openAppWindow('resume'); break;
+      case 'projects': openFolderWindow('folder-web-apps'); break;
+      case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
+      case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
+      default: break;
+    }
+  };
 
   return (
     <div
       id="windows-desktop-root"
       onContextMenu={handleDesktopContextMenu}
-      onClick={() => {
-        setSelectedDesktopFolderId(null);
+      onClick={(e) => {
+        const target = e.target as HTMLElement;
+        if (target.closest('#windows-taskbar')) return;
+        setSelectedDesktopId(null);
         setDesktopContextMenu(null);
+        setSubmenu(null);
         setIsStartMenuOpen(false);
       }}
       className="relative w-screen h-screen overflow-hidden select-none font-sans"
       style={{ background: currentWallpaper.value }}
     >
-      {/* Light Geometry overlay matching Windows 11 wallpaper aesthetic */}
+      {/* Light geometry overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-black/20 pointer-events-none" />
 
-      {/* Desktop Grid Icons (Top-to-Bottom, Left-to-Right Grid Alignment) */}
-      <div className="absolute top-3 left-3 z-10 grid grid-flow-col grid-rows-[repeat(auto-fill,80px)] auto-cols-[88px] gap-x-1 gap-y-0.5 max-h-[calc(100vh-56px)] overflow-hidden pointer-events-auto">
-        {rootDesktopFolders.map((folder) => {
-          const itemCount = projects.filter((p) => p.folderId === folder.id).length;
+      {/* Desktop icons (top-to-bottom grid, Windows spacing) */}
+      {showDesktopIcons && (
+        <div
+          className={`absolute top-3 left-3 z-10 grid grid-flow-col gap-x-1 gap-y-2 max-h-[calc(100vh-52px)] overflow-hidden pointer-events-auto ${gridClass}`}
+        >
+
+
+          {rootDesktopFolders.map((folder) => {
+            const itemCount = projects.filter((p) => p.folderId === folder.id).length;
+            return (
+              <DesktopIcon
+                key={folder.id}
+                folder={folder}
+                itemCount={itemCount}
+                isSelected={selectedDesktopId === folder.id}
+                onSelect={() => setSelectedDesktopId(folder.id)}
+                onOpen={() => openFolderWindow(folder.id)}
+                onRename={handleOpenEditFolder}
+                onDelete={handleDeleteFolder}
+                size={desktopIconSize}
+              />
+            );
+          })}
+
+          <DesktopIcon
+            isAddFolderShortcut
+            isSelected={false}
+            onSelect={() => { }}
+            onOpen={() => { }}
+            onAddFolderClick={() => handleOpenAddFolder(null)}
+            size={desktopIconSize}
+          />
+        </div>
+      )}
+
+      {/* ── Window layer (Window Manager) ── */}
+      <AnimatePresence>
+        {windows.map((win) => {
+          const isActive = activeWindowId === win.id;
           return (
-            <DesktopIcon
-              key={folder.id}
-              folder={folder}
-              itemCount={itemCount}
-              isSelected={selectedDesktopFolderId === folder.id}
-              onSelect={() => setSelectedDesktopFolderId(folder.id)}
-              onOpen={() => openFolderWindow(folder.id)}
-              onRename={handleOpenEditFolder}
-              onDelete={handleDeleteFolder}
-            />
+            <motion.div
+              key={win.id}
+              className="absolute inset-0 pointer-events-none"
+              style={{ zIndex: win.zIndex }}
+              initial={{ opacity: 0, scale: 0.95, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 24 }}
+              transition={{ type: 'spring', damping: 30, stiffness: 380 }}
+            >
+              <Window
+                window={win}
+                isActive={isActive}
+                icon={WINDOW_ICONS[win.type]}
+                onFocus={() => focusWindow(win.id)}
+                onClose={() => closeWindow(win.id)}
+                onMinimize={() => toggleMinimizeWindow(win.id)}
+                onMaximize={() => toggleMaximizeWindow(win.id)}
+                onSnap={(snap) => handleSnap(win.id, snap)}
+                onBoundsChange={(bounds) => handleBoundsChange(win.id, bounds)}
+              >
+                {(win.type === 'folder' || win.type === 'file-explorer') && (
+                  <FileExplorerApp
+                    location={win.explorerLocation ?? (win.type === 'folder' ? win.targetId ?? 'this-pc' : 'this-pc')}
+                    folders={folders}
+                    projects={projects}
+                    onLocationChange={(loc, title) => updateExplorerWindow(win.id, loc, title)}
+                    onOpenProject={openProjectWindow}
+                    onAddFolder={handleOpenAddFolder}
+                    onAddProject={handleOpenAddProject}
+                    onEditFolder={handleOpenEditFolder}
+                    onDeleteFolder={handleDeleteFolder}
+                    onEditProject={handleOpenEditProject}
+                    onDeleteProject={handleDeleteProject}
+                    onOpenApp={launchApp}
+                  />
+                )}
+
+                {win.type === 'project' && win.targetId && (() => {
+                  const proj = projects.find((p) => p.id === win.targetId);
+                  if (!proj) return <p className="p-4 text-xs text-rose-400">Project deleted.</p>;
+                  const folder = folders.find((f) => f.id === proj.folderId);
+                  return (
+                    <ProjectDetailView
+                      project={proj}
+                      folder={folder}
+                      onEdit={() => handleOpenEditProject(proj)}
+                      onDelete={() => handleDeleteProject(proj.id)}
+                    />
+                  );
+                })()}
+
+                {win.type === 'terminal' && (
+                  <TerminalWindow
+                    folders={folders}
+                    projects={projects}
+                    profile={profile}
+                    onOpenFolder={openFolderWindow}
+                    onOpenAddFolderModal={() => handleOpenAddFolder(null)}
+                    onOpenAddProjectModal={() => handleOpenAddProject('folder-web-apps')}
+                  />
+                )}
+
+                {win.type === 'about' && <AboutMeWindow profile={profile} />}
+                {win.type === 'skills' && <SkillsWindow />}
+                {win.type === 'resume' && <ResumeWindow profile={profile} />}
+                {win.type === 'contact' && <ContactWindow profile={profile} />}
+
+                {win.type === 'browser' && (
+                  <BrowserWindow key={win.browserUrl ?? 'default'} initialUrl={win.browserUrl} />
+                )}
+                {win.type === 'calculator' && <CalculatorWindow />}
+                {win.type === 'notepad' && (
+                  <NotepadWindow
+                    content={win.notepadContent || ''}
+                    onChange={(content) =>
+                      setWindows((prev) =>
+                        prev.map((w) => (w.id === win.id ? { ...w, notepadContent: content } : w))
+                      )
+                    }
+                  />
+                )}
+
+                {win.type === 'settings' && (
+                  <SettingsApp
+                    wallpapers={WALLPAPERS}
+                    currentWallpaper={currentWallpaper}
+                    onSelectWallpaper={setCurrentWallpaper}
+                    profile={profile}
+                    onUpdateProfile={setProfile}
+                    onOpenApp={launchApp}
+                  />
+                )}
+              </Window>
+            </motion.div>
           );
         })}
+      </AnimatePresence>
 
-        {/* Dedicated "+ Add Folder" Shortcut Icon on Desktop */}
-        <DesktopIcon
-          isAddFolderShortcut
-          isSelected={false}
-          onSelect={() => {}}
-          onOpen={() => {}}
-          onAddFolderClick={() => handleOpenAddFolder(null)}
-        />
-      </div>
-
-      {/* Windows Application Layer */}
-      {windows.map((win) => {
-        const isActive = activeWindowId === win.id;
-
-        return (
-          <WindowFrame
-            key={win.id}
-            window={win}
-            isActive={isActive}
-            onFocus={() => focusWindow(win.id)}
-            onClose={() => closeWindow(win.id)}
-            onMinimize={() => toggleMinimizeWindow(win.id)}
-            onMaximize={() => toggleMaximizeWindow(win.id)}
-          >
-            {win.type === 'folder' && win.targetId && (() => {
-              const currentFolder = folders.find((f) => f.id === win.targetId);
-              if (!currentFolder) return <p className="p-4 text-xs text-rose-400">Folder deleted.</p>;
-
-              const subfolders = folders.filter((f) => f.parentId === currentFolder.id);
-              const folderProjects = projects.filter((p) => p.folderId === currentFolder.id);
-
-              return (
-                <FileExplorer
-                  currentFolder={currentFolder}
-                  subfolders={subfolders}
-                  projects={folderProjects}
-                  allFolders={folders}
-                  onNavigateFolder={(fId) => openFolderWindow(fId)}
-                  onOpenProject={(proj) => openProjectWindow(proj)}
-                  onAddFolderClick={(pId) => handleOpenAddFolder(pId)}
-                  onAddProjectClick={(fId) => handleOpenAddProject(fId)}
-                  onEditFolder={handleOpenEditFolder}
-                  onDeleteFolder={handleDeleteFolder}
-                  onEditProject={handleOpenEditProject}
-                  onDeleteProject={handleDeleteProject}
-                />
-              );
-            })()}
-
-            {win.type === 'project' && win.targetId && (() => {
-              const proj = projects.find((p) => p.id === win.targetId);
-              if (!proj) return <p className="p-4 text-xs text-rose-400">Project deleted.</p>;
-              const folder = folders.find((f) => f.id === proj.folderId);
-
-              return (
-                <ProjectDetailView
-                  project={proj}
-                  folder={folder}
-                  onEdit={() => handleOpenEditProject(proj)}
-                  onDelete={() => handleDeleteProject(proj.id)}
-                />
-              );
-            })()}
-
-            {win.type === 'terminal' && (
-              <TerminalWindow
-                folders={folders}
-                projects={projects}
-                profile={profile}
-                onOpenFolder={openFolderWindow}
-                onOpenAddFolderModal={() => handleOpenAddFolder(null)}
-                onOpenAddProjectModal={() => handleOpenAddProject('folder-web-apps')}
-              />
-            )}
-
-            {win.type === 'settings' && (
-              <SettingsWindow
-                wallpapers={WALLPAPERS}
-                currentWallpaper={currentWallpaper}
-                onSelectWallpaper={setCurrentWallpaper}
-                profile={profile}
-                onUpdateProfile={setProfile}
-              />
-            )}
-          </WindowFrame>
-        );
-      })}
-
-      {/* Desktop Context Menu (Right-Click) */}
+      {/* Desktop context menu */}
       {desktopContextMenu && (
         <div
-          className="fixed z-50 w-52 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200 animate-in fade-in zoom-in-95 duration-100"
+          className="fixed z-[120] w-52 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200"
           style={{ top: desktopContextMenu.y, left: desktopContextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={() => {
-              handleOpenAddFolder(null);
-              setDesktopContextMenu(null);
-            }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-amber-500 hover:text-slate-950 font-semibold transition-colors text-amber-300"
+          <div
+            className="relative"
+            onMouseEnter={() => setSubmenu('view')}
+            onMouseLeave={() => setSubmenu(null)}
           >
-            <FolderPlus className="w-4 h-4" />
-            + New Folder
-          </button>
-          <button
-            onClick={() => {
-              handleOpenAddProject('folder-web-apps');
-              setDesktopContextMenu(null);
-            }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-blue-600 hover:text-white transition-colors"
-          >
-            <Plus className="w-4 h-4 text-blue-400" />
-            + New Portfolio Project
-          </button>
-          <div className="h-px bg-slate-800 my-1" />
-          <button
-            onClick={() => {
-              openTerminalWindow();
-              setDesktopContextMenu(null);
-            }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors"
-          >
-            <TerminalIcon className="w-4 h-4 text-emerald-400" />
-            Open Command Prompt
-          </button>
-          <button
-            onClick={() => {
-              openSettingsWindow();
-              setDesktopContextMenu(null);
-            }}
-            className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors"
-          >
-            <Settings className="w-4 h-4 text-purple-400" />
-            Personalize Desktop
-          </button>
-        </div>
-      )}
-
-      {/* Task View Window Switcher Overlay (Triggered by taskbar task view icon) */}
-      {isTaskViewOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xl p-8 flex flex-col justify-between animate-in fade-in duration-200"
-          onClick={() => setIsTaskViewOpen(false)}
-        >
-          <div className="flex items-center justify-between text-white border-b border-slate-800 pb-4">
-            <div className="flex items-center gap-3">
-              <Layers className="w-6 h-6 text-amber-400" />
-              <div>
-                <h2 className="text-lg font-bold">Task View / Virtual Desktops</h2>
-                <p className="text-xs text-slate-400">Click any window thumbnail to bring to focus</p>
+            <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left">
+              <div className="flex items-center gap-2.5">
+                <Grid className="w-4 h-4 text-blue-400" />
+                <span>View</span>
               </div>
-            </div>
-            <button
-              onClick={() => setIsTaskViewOpen(false)}
-              className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300"
-            >
-              <X className="w-5 h-5" />
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
-          </div>
-
-          {/* Windows Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-auto">
-            {windows.length === 0 ? (
-              <div className="col-span-full text-center py-12 text-slate-500 text-sm">
-                No active windows running. Double-click any folder or icon on the desktop to launch.
-              </div>
-            ) : (
-              windows.map((win) => (
-                <div
-                  key={win.id}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    focusWindow(win.id);
-                    setIsTaskViewOpen(false);
-                  }}
-                  className="group bg-slate-900 border border-slate-700 hover:border-blue-500 rounded-2xl p-4 shadow-2xl cursor-pointer hover:scale-105 transition-all flex flex-col justify-between h-48 relative overflow-hidden"
+            {submenu === 'view' && (
+              <div className="absolute left-[98%] top-0 w-44 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
+                <button
+                  onClick={() => { setDesktopIconSize('large'); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
                 >
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span className="text-xs font-bold text-white truncate">{win.title}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        closeWindow(win.id);
-                      }}
-                      className="p-1 rounded hover:bg-rose-600 text-slate-400 hover:text-white"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                  <div className="flex-1 flex items-center justify-center text-slate-500 text-xs">
-                    [ Active Window ]
-                  </div>
-                </div>
-              ))
+                  <span>Large icons</span>
+                  {desktopIconSize === 'large' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                </button>
+                <button
+                  onClick={() => { setDesktopIconSize('medium'); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
+                >
+                  <span>Medium icons</span>
+                  {desktopIconSize === 'medium' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                </button>
+                <button
+                  onClick={() => { setDesktopIconSize('small'); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
+                >
+                  <span>Small icons</span>
+                  {desktopIconSize === 'small' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                </button>
+                <div className="h-px bg-slate-800 my-1" />
+                <button
+                  onClick={() => { setShowDesktopIcons(!showDesktopIcons); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
+                >
+                  <span>Show desktop icons</span>
+                  {showDesktopIcons && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                </button>
+              </div>
             )}
           </div>
 
-          <div className="text-center text-xs text-slate-500">
-            Press ESC or click anywhere to exit Task View
+          <div
+            className="relative"
+            onMouseEnter={() => setSubmenu('sort')}
+            onMouseLeave={() => setSubmenu(null)}
+          >
+            <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left">
+              <div className="flex items-center gap-2.5">
+                <ArrowUpDown className="w-4 h-4 text-emerald-400" />
+                <span>Sort by</span>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+            {submenu === 'sort' && (
+              <div className="absolute left-[98%] top-0 w-40 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
+                <button
+                  onClick={() => { setDesktopSortBy('name'); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
+                >
+                  <span>Name</span>
+                  {desktopSortBy === 'name' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                </button>
+                <button
+                  onClick={() => { setDesktopSortBy('date'); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
+                >
+                  <span>Date created</span>
+                  {desktopSortBy === 'date' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                </button>
+                <button
+                  onClick={() => { setDesktopSortBy(null); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
+                >
+                  <span>Unsorted</span>
+                  {desktopSortBy === null && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                </button>
+              </div>
+            )}
           </div>
+
+          <button
+            onClick={() => setDesktopContextMenu(null)}
+            className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"
+          >
+            <RefreshCw className="w-4 h-4 text-amber-400" />
+            <span>Refresh</span>
+          </button>
+
+          <div className="h-px bg-slate-800 my-1" />
+
+          <div
+            className="relative"
+            onMouseEnter={() => setSubmenu('new')}
+            onMouseLeave={() => setSubmenu(null)}
+          >
+            <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left">
+              <div className="flex items-center gap-2.5">
+                <Plus className="w-4 h-4 text-sky-400" />
+                <span>New</span>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+            {submenu === 'new' && (
+              <div className="absolute left-[98%] top-0 w-44 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
+                <button
+                  onClick={() => { handleOpenAddFolder(null); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"
+                >
+                  <FolderPlus className="w-4 h-4 text-amber-400" />
+                  <span>Folder</span>
+                </button>
+                <button
+                  onClick={() => { handleOpenAddProject('folder-web-apps'); setDesktopContextMenu(null); setSubmenu(null); }}
+                  className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"
+                >
+                  <Sparkles className="w-4 h-4 text-blue-400" />
+                  <span>Portfolio Project</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="h-px bg-slate-800 my-1" />
+
+          <button
+            onClick={() => { openTerminalWindow(); setDesktopContextMenu(null); }}
+            className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"
+          >
+            <TerminalIcon className="w-4 h-4 text-emerald-400" />
+            <span>Open Command Prompt</span>
+          </button>
+          <button
+            onClick={() => { openSettingsWindow(); setDesktopContextMenu(null); }}
+            className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"
+          >
+            <Monitor className="w-4 h-4 text-teal-400" />
+            <span>Display settings</span>
+          </button>
+          <button
+            onClick={() => { openSettingsWindow(); setDesktopContextMenu(null); }}
+            className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"
+          >
+            <Palette className="w-4 h-4 text-purple-400" />
+            <span>Personalize</span>
+          </button>
         </div>
       )}
 
-      {/* Start Menu Popup */}
+      {/* Start Menu */}
       <StartMenu
         isOpen={isStartMenuOpen}
         profile={profile}
         folders={folders}
         projects={projects}
         onClose={() => setIsStartMenuOpen(false)}
-        onOpenFolder={openFolderWindow}
-        onOpenProject={openProjectWindow}
-        onOpenTerminal={openTerminalWindow}
-        onOpenSettings={openSettingsWindow}
-        onOpenAddFolderModal={() => handleOpenAddFolder(null)}
-        onOpenAddProjectModal={() => handleOpenAddProject('folder-web-apps')}
+        onOpenApp={launchApp}
       />
 
-      {/* Windows Taskbar */}
+      {/* Taskbar */}
       <Taskbar
         windows={windows}
         activeWindowId={activeWindowId}
         isStartMenuOpen={isStartMenuOpen}
         onToggleStartMenu={() => setIsStartMenuOpen(!isStartMenuOpen)}
-        onToggleTaskView={() => setIsTaskViewOpen(!isTaskViewOpen)}
         onWindowClick={(win) => {
           if (win.isMinimized) {
             focusWindow(win.id);
@@ -647,10 +952,31 @@ export default function App() {
             focusWindow(win.id);
           }
         }}
-        onOpenAddFolderModal={() => handleOpenAddFolder(null)}
-        onOpenAddProjectModal={() => handleOpenAddProject('folder-web-apps')}
         onOpenTerminal={openTerminalWindow}
         onOpenSettings={openSettingsWindow}
+        onOpenFileExplorer={() => openFileExplorerWindow('this-pc')}
+        onOpenBrowser={() => openBrowserWindow()}
+        onOpenSearch={() => setIsSearchOpen(true)}
+      />
+
+      {/* Search Panel */}
+      <SearchPanel
+        isOpen={isSearchOpen}
+        folders={folders}
+        projects={projects}
+        onClose={() => setIsSearchOpen(false)}
+        onOpenFolder={(id) => {
+          openFolderWindow(id);
+          setIsSearchOpen(false);
+        }}
+        onOpenProject={(proj) => {
+          openProjectWindow(proj);
+          setIsSearchOpen(false);
+        }}
+        onOpenApp={(app) => {
+          launchApp(app);
+          setIsSearchOpen(false);
+        }}
       />
 
       {/* Modals */}

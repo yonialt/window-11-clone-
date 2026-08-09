@@ -161,7 +161,7 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
       {history.map((item, idx) => (
         <div key={idx} className="mb-3 space-y-1">
           <div className="flex items-center gap-2 text-slate-400">
-            <span className="text-emerald-400 font-bold">PS C:\Users\Yonathan\Portfolio&gt;</span>
+            <span className="text-emerald-400 font-bold">PS C:\Users\Yonatan\Portfolio&gt;</span>
             <span className="text-white font-medium">{item.cmd}</span>
           </div>
           <div className="pl-4">{item.output}</div>
@@ -170,7 +170,7 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
 
       {/* Input Prompt */}
       <form onSubmit={handleCommand} className="flex items-center gap-2 mt-1">
-        <span className="text-emerald-400 font-bold shrink-0">PS C:\Users\Yonathan\Portfolio&gt;</span>
+        <span className="text-emerald-400 font-bold shrink-0">PS C:\Users\Yonatan\Portfolio&gt;</span>
         <input
           type="text"
           value={input}
