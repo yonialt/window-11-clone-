@@ -488,6 +488,7 @@ export default function App() {
       case 'projects': openFolderWindow('folder-software-dev'); break;
       case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
       case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
+      case 'resume': window.open(RESUME_PDF_URL, '_blank', 'noopener,noreferrer'); break;
       default: openAppWindow(id as WindowType);
     }
   };
@@ -628,7 +629,7 @@ export default function App() {
       case 'music': openFileExplorerWindow('music'); break;
       case 'videos': openFileExplorerWindow('videos'); break;
       case 'recycle-bin': openFileExplorerWindow('recycle-bin'); break;
-      case 'resume': openAppWindow('resume'); break;
+      case 'resume': window.open(RESUME_PDF_URL, '_blank', 'noopener,noreferrer'); break;
       case 'projects': openFolderWindow('folder-software-dev'); break;
       case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
       case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
