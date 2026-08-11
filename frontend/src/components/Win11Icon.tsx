@@ -55,15 +55,18 @@ export const Win11Icon: React.FC<Win11IconProps> = ({
     return <img src={mobileIcon} alt="Mobile Projects" style={iconStyle} className={cls} />;
   }
 
-  // 5. Documents & Bio / Resume / About / Contact
+  // 5. Documents / Bio / Resume / PDF files
   if (
     normalized.includes('document') ||
     normalized.includes('bio') ||
-    normalized.includes('about') ||
     normalized.includes('resume') ||
-    normalized.includes('pdf') ||
-    normalized.includes('contact')
+    normalized.includes('pdf')
   ) {
+    return <img src={documentIcon} alt="Document" style={iconStyle} className={cls} />;
+  }
+
+  // 6. About / Contact
+  if (normalized.includes('about') || normalized.includes('contact')) {
     return <img src={folderIcon} alt="Folder" style={iconStyle} className={cls} />;
   }
 

@@ -70,6 +70,19 @@ const STORAGE_KEYS = {
 
 const DEFAULT_BROWSER_URL = 'https://www.google.com/webhp?igu=1';
 
+// Resume PDF shortcut — opens the CV in a new browser tab (e.g. Chrome)
+const RESUME_PDF_URL = '/resume.pdf';
+const RESUME_DESKTOP_ICON: FolderType = {
+  id: 'desktop-resume-pdf',
+  name: 'Resume',
+  icon: 'document',
+  color: 'purple',
+  parentId: null,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  isSystem: true,
+  description: 'Open resume PDF in your browser',
+};
+
 // Per-app title bar icons (Fluent style)
 const WINDOW_ICONS: Record<string, React.ReactNode> = {
   folder: <Folder className="w-4 h-4 text-amber-400" />,
@@ -664,6 +677,16 @@ export default function App() {
               />
             );
           })}
+
+          {/* Resume PDF shortcut — opens the CV in a new browser tab */}
+          <DesktopIcon
+            key={RESUME_DESKTOP_ICON.id}
+            folder={RESUME_DESKTOP_ICON}
+            isSelected={selectedDesktopId === RESUME_DESKTOP_ICON.id}
+            onSelect={() => setSelectedDesktopId(RESUME_DESKTOP_ICON.id)}
+            onOpen={() => window.open(RESUME_PDF_URL, '_blank', 'noopener,noreferrer')}
+            size={desktopIconSize}
+          />
 
         </div>
       )}
