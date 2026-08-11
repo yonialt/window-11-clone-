@@ -97,6 +97,15 @@ export const INITIAL_FOLDERS: Folder[] = [
     description: 'Project screenshots, graphic design mockups, and wallpapers.',
   },
   {
+    id: 'folder-certificates',
+    name: 'Certificates',
+    icon: 'star',
+    color: 'amber',
+    parentId: null,
+    createdAt: '2026-03-10T09:00:00.000Z',
+    description: 'Professional certifications, course completion badges, and verified credentials.',
+  },
+  {
     id: 'folder-recycle-bin',
     name: 'Recycle Bin',
     icon: 'trash',
@@ -160,6 +169,20 @@ export const INITIAL_PROJECTS: Project[] = [
     featured: false,
     createdAt: '2025-12-01T08:00:00.000Z',
     updatedAt: '2026-02-20T10:00:00.000Z',
+  },
+  {
+    id: 'proj-ccna-certificate',
+    title: 'CCNA 200-301 Network Fundamentals',
+    tagline: 'Verified course completion certificate from Simplilearn SkillUp',
+    description: 'Completed the Learn CCNA 200-301 Network Fundamentals online course on Simplilearn SkillUp. This verified certificate confirms mastery of core networking concepts including IP addressing, routing & switching fundamentals, and network architecture. Click “Launch Live Preview” to view and download the official certificate.',
+    folderId: 'folder-certificates',
+    tags: ['CCNA', 'Cisco', 'Networking', 'Certification'],
+    techStack: ['CCNA 200-301', 'Network Fundamentals', 'Routing & Switching', 'TCP/IP'],
+    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80',
+    liveUrl: 'https://www.simplilearn.com/skillup-certificate-landing?token=eyJjb3Vyc2VfaWQiOiIyNDE1IiwiY2VydGlmaWNhdGVfdXJsIjoiaHR0cHM6XC9cL2NlcnRpZmljYXRlcy5zaW1wbGljZG4ubmV0XC9zaGFyZVwvMTA1ODQ4MjRfMTA5MjQ0MzRfMTc4NjQwMzE4NDkyMy5wbmciLCJ1c2VybmFtZSI6InlvbmF0aGFuIGFsdGF5ZSJ9&utm_source=shared-certificate&utm_medium=lms&utm_campaign=shared-certificate-promotion&referrer=https%3A%2F%2Flms.simplilearn.com%2Fcourses%2F5061%2FLearn-CCNA-200-301-Network-Fundamentals-Online%2Fcertificate%2Fdownload-skillup&%24web_only=true&_branch_match_id=1615500060220599587&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXL87MLcjJ1EssKNDLyczL1k%2FVdw7JTC43y0wsM02yrytKTUstKsrMS49PKsovL04tsvUBqkpN8cwDAKd%2BvohBAAAA',
+    featured: false,
+    createdAt: '2026-03-10T09:00:00.000Z',
+    updatedAt: '2026-03-10T09:00:00.000Z',
   },
 ];
 

@@ -4,7 +4,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 
 const app = express();
-const PORT = 24678;
+const PORT = Number(process.env.PORT) || 24678;
 
 app.use(express.json());
 

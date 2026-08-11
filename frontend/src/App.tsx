@@ -62,8 +62,8 @@ import { SearchPanel } from './components/SearchPanel';
 import { FileExplorerApp } from './components/FileExplorerApp';
 
 const STORAGE_KEYS = {
-  FOLDERS: 'portfolio_os_folders_v2',
-  PROJECTS: 'portfolio_os_projects_v2',
+  FOLDERS: 'portfolio_os_folders_v3',
+  PROJECTS: 'portfolio_os_projects_v3',
   WALLPAPER: 'portfolio_os_wallpaper_v2',
   PROFILE: 'portfolio_os_profile_v2',
 };
@@ -665,14 +665,6 @@ export default function App() {
             );
           })}
 
-          <DesktopIcon
-            isAddFolderShortcut
-            isSelected={false}
-            onSelect={() => { }}
-            onOpen={() => { }}
-            onAddFolderClick={() => handleOpenAddFolder(null)}
-            size={desktopIconSize}
-          />
         </div>
       )}
 
