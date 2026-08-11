@@ -62,8 +62,8 @@ import { SearchPanel } from './components/SearchPanel';
 import { FileExplorerApp } from './components/FileExplorerApp';
 
 const STORAGE_KEYS = {
-  FOLDERS: 'portfolio_os_folders_v3',
-  PROJECTS: 'portfolio_os_projects_v3',
+  FOLDERS: 'portfolio_os_folders_v4',
+  PROJECTS: 'portfolio_os_projects_v4',
   WALLPAPER: 'portfolio_os_wallpaper_v2',
   PROFILE: 'portfolio_os_profile_v2',
 };
@@ -143,7 +143,7 @@ export default function App() {
   // Project Modal State
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
-  const [defaultProjectFolderId, setDefaultProjectFolderId] = useState<string>('folder-other-projects');
+  const [defaultProjectFolderId, setDefaultProjectFolderId] = useState<string>('folder-software-dev');
 
   // Global keyboard shortcuts: ESC closes overlays, Windows key toggles Start Menu
   useEffect(() => {
@@ -472,7 +472,7 @@ export default function App() {
       case 'settings': openSettingsWindow(); break;
       case 'terminal': openTerminalWindow(); break;
       case 'browser': openBrowserWindow(); break;
-      case 'projects': openFolderWindow('folder-other-projects'); break;
+      case 'projects': openFolderWindow('folder-software-dev'); break;
       case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
       case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
       default: openAppWindow(id as WindowType);
@@ -534,7 +534,7 @@ export default function App() {
     }
   };
 
-  const handleOpenAddProject = (folderId: string = 'folder-other-projects') => {
+  const handleOpenAddProject = (folderId: string = 'folder-software-dev') => {
     setProjectToEdit(null);
     setDefaultProjectFolderId(folderId);
     setIsProjectModalOpen(true);
@@ -616,7 +616,7 @@ export default function App() {
       case 'videos': openFileExplorerWindow('videos'); break;
       case 'recycle-bin': openFileExplorerWindow('recycle-bin'); break;
       case 'resume': openAppWindow('resume'); break;
-      case 'projects': openFolderWindow('folder-other-projects'); break;
+      case 'projects': openFolderWindow('folder-software-dev'); break;
       case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
       case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
       default: break;
@@ -731,7 +731,7 @@ export default function App() {
                     profile={profile}
                     onOpenFolder={openFolderWindow}
                     onOpenAddFolderModal={() => handleOpenAddFolder(null)}
-                    onOpenAddProjectModal={() => handleOpenAddProject('folder-other-projects')}
+                    onOpenAddProjectModal={() => handleOpenAddProject('folder-software-dev')}
                   />
                 )}
 
@@ -896,7 +896,7 @@ export default function App() {
                   <span>Folder</span>
                 </button>
                 <button
-                  onClick={() => { handleOpenAddProject('folder-other-projects'); setDesktopContextMenu(null); setSubmenu(null); }}
+                  onClick={() => { handleOpenAddProject('folder-software-dev'); setDesktopContextMenu(null); setSubmenu(null); }}
                   className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"
                 >
                   <Sparkles className="w-4 h-4 text-blue-400" />
