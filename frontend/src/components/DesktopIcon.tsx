@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { FolderOpen, Edit2, Trash2 } from 'lucide-react';
+import { FolderOpen, Edit2, Trash2, Download } from 'lucide-react';
 import { Win11Icon } from './Win11Icon';
 import { Folder as FolderType } from '../types';
 
@@ -14,6 +14,7 @@ interface DesktopIconProps {
   onAddFolderClick?: () => void;
   onRename?: (folder: FolderType) => void;
   onDelete?: (folderId: string) => void;
+  onDownload?: () => void;
   size?: 'small' | 'medium' | 'large';
 }
 
@@ -27,6 +28,7 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
   onAddFolderClick,
   onRename,
   onDelete,
+  onDownload,
   size = 'medium',
 }) => {
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
@@ -84,6 +86,20 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
           transition={{ duration: 0.12 }}
         >
           <Win11Icon name={isAddFolderShortcut ? 'add folder' : (folder?.name ?? '')} size={iconSize} />
+
+          {/* Download badge — shown when an onDownload handler is provided */}
+          {onDownload && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDownload();
+              }}
+              title="Download resume PDF"
+              className="absolute -bottom-1 -right-1 w-5 h-5 flex items-center justify-center rounded-full bg-blue-600 hover:bg-blue-500 active:scale-90 text-white shadow-md border border-white/30 transition-transform"
+            >
+              <Download className="w-3 h-3" />
+            </button>
+          )}
         </motion.div>
 
         {/* Label */}
@@ -146,6 +162,20 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
                 <FolderOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 Open
               </button>
+              {onDownload && (
+                <>
+                  <div className="mx-2 my-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                  <button
+                    id={`ctx-download-${folder?.id}`}
+                    onClick={() => { onDownload(); closeContextMenu(); }}
+                    className="flex items-center gap-2.5 w-full px-3 py-1.5 text-xs hover:bg-white/8 transition-colors text-left"
+                    style={{ color: '#e8e8e8' }}
+                  >
+                    <Download className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                    Download
+                  </button>
+                </>
+              )}
               {onRename && !folder?.isSystem && (
                 <>
                   <div className="mx-2 my-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />

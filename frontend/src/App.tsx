@@ -83,6 +83,16 @@ const RESUME_DESKTOP_ICON: FolderType = {
   description: 'Open resume PDF in your browser',
 };
 
+// Directly download the resume PDF instead of opening it
+const downloadResumePdf = () => {
+  const a = document.createElement('a');
+  a.href = RESUME_PDF_URL;
+  a.download = 'Yonathan_Altaye_CV.pdf';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
+
 // Per-app title bar icons (Fluent style)
 const WINDOW_ICONS: Record<string, React.ReactNode> = {
   folder: <Folder className="w-4 h-4 text-amber-400" />,
@@ -679,13 +689,14 @@ export default function App() {
             );
           })}
 
-          {/* Resume PDF shortcut — opens the CV in a new browser tab */}
+          {/* Resume PDF shortcut — opens the CV in a new browser tab, with a download badge */}
           <DesktopIcon
             key={RESUME_DESKTOP_ICON.id}
             folder={RESUME_DESKTOP_ICON}
             isSelected={selectedDesktopId === RESUME_DESKTOP_ICON.id}
             onSelect={() => setSelectedDesktopId(RESUME_DESKTOP_ICON.id)}
             onOpen={() => window.open(RESUME_PDF_URL, '_blank', 'noopener,noreferrer')}
+            onDownload={downloadResumePdf}
             size={desktopIconSize}
           />
 
