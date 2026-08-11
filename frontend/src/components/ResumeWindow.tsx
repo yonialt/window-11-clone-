@@ -1,6 +1,6 @@
 import React from 'react';
 import { DeveloperProfile } from '../types';
-import { Download, Briefcase, GraduationCap, Award } from 'lucide-react';
+import { Briefcase, GraduationCap, Award } from 'lucide-react';
 
 interface ResumeWindowProps {
   profile: DeveloperProfile;
@@ -34,46 +34,12 @@ const CERTIFICATIONS = [
 ];
 
 export const ResumeWindow: React.FC<ResumeWindowProps> = ({ profile }) => {
-  const handleDownload = () => {
-    const content = `
-${profile.name}
-${profile.role}
-${profile.email} | ${profile.location}
-${profile.github} | ${profile.linkedin}
-
-EXPERIENCE
-${EXPERIENCE.map((e) => `${e.role} at ${e.company} (${e.period})\n${e.description}`).join('\n\n')}
-
-EDUCATION
-${EDUCATION.map((e) => `${e.degree} — ${e.school} (${e.year})`).join('\n')}
-
-CERTIFICATIONS
-${CERTIFICATIONS.map((c) => `${c.name} — ${c.issuer}`).join('\n')}
-    `.trim();
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${profile.name.replace(/\s+/g, '_')}_Resume.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="h-full overflow-auto p-6" style={{ fontFamily: 'var(--win11-font)' }}>
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl font-semibold text-white">{profile.name}</h1>
-            <p className="text-blue-400 text-sm">{profile.role}</p>
-          </div>
-          <button
-            onClick={handleDownload}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            Download Resume
-          </button>
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold text-white">{profile.name}</h1>
+          <p className="text-blue-400 text-sm">{profile.role}</p>
         </div>
 
         <section className="mb-6">

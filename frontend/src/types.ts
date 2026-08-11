@@ -122,6 +122,8 @@ export interface DeveloperProfile {
   avatarUrl: string;
   github: string;
   linkedin: string;
+  fiverr?: string;
+  upwork?: string;
   email: string;
   location: string;
 }

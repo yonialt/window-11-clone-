@@ -2,14 +2,23 @@ import { Folder, Project, Wallpaper, DeveloperProfile } from '../types';
 import win11Wallpaper from '../assets/icons/win11wallpaper.jpg';
 import yo from '../assets/icons/yo.jpg'
 
+export const PROFILE_LINKS = {
+  github: 'https://github.com/yonialt',
+  linkedin: 'https://www.linkedin.com/in/yonatan-altaye-a18260375/',
+  fiverr: 'https://www.fiverr.com/users/yo_nialto',
+  upwork: 'https://www.upwork.com/freelancers/~017328f0740115d19e',
+};
+
 export const INITIAL_PROFILE: DeveloperProfile = {
   name: 'Yonatan Altaye',
   role: 'Software Engineer | Network & System Admin',
   bio: 'Computer Science graduate with hands-on experience in IT support, networking, and backend development. Skilled in building REST APIs with Java (Spring Boot) and Node.js (Express.js), working with relational and NoSQL databases, and deploying applications on AWS, Azure, and GCP.',
   value: `url("${yo}") center/cover no-repeat`,
   avatarUrl: yo,
-  github: 'https://github.com/yonialt',
-  linkedin: 'https://www.linkedin.com/in/yonatan-altaye-a18260375/',
+  github: PROFILE_LINKS.github,
+  linkedin: PROFILE_LINKS.linkedin,
+  fiverr: PROFILE_LINKS.fiverr,
+  upwork: PROFILE_LINKS.upwork,
   email: 'yonathanaltayecama@gmail.com',
   location: 'Addis Ababa, Ethiopia',
 };

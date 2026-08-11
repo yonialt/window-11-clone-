@@ -1,12 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DeveloperProfile } from '../types';
-import { Github, Linkedin, Mail, MapPin, ExternalLink } from 'lucide-react';
+import { Github, Linkedin, Mail, MapPin, ExternalLink, Copy, Check } from 'lucide-react';
 
 interface AboutMeWindowProps {
   profile: DeveloperProfile;
 }
 
 export const AboutMeWindow: React.FC<AboutMeWindowProps> = ({ profile }) => {
+  const [copied, setCopied] = useState(false);
+
+  const copyEmail = () => {
+    const done = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    };
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(profile.email).then(done).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = profile.email;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        done();
+      });
+    } else {
+      done();
+    }
+  };
+
   return (
     <div className="h-full overflow-auto p-6" style={{ fontFamily: 'var(--win11-font)' }}>
       <div className="max-w-2xl mx-auto">
@@ -64,13 +88,15 @@ export const AboutMeWindow: React.FC<AboutMeWindowProps> = ({ profile }) => {
             <Linkedin className="w-4 h-4" />
             LinkedIn
           </a>
-          <a
-            href={`mailto:${profile.email}`}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/8 hover:bg-white/12 text-sm text-white transition-colors"
+          <button
+            type="button"
+            onClick={copyEmail}
+            title="Click to copy email"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/8 hover:bg-white/12 text-sm text-white transition-colors cursor-pointer"
           >
-            <Mail className="w-4 h-4" />
-            Email
-          </a>
+            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            {copied ? 'Copied!' : 'Email'}
+          </button>
         </div>
       </div>
     </div>

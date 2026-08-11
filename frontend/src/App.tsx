@@ -41,7 +41,6 @@ import {
   Terminal,
 } from 'lucide-react';
 import { DesktopIcon } from './components/DesktopIcon';
-import { DESKTOP_SHORTCUTS } from './config/desktopShortcuts';
 import { Window } from './components/Window';
 import { ProjectDetailView } from './components/ProjectDetailView';
 import { FolderModal } from './components/FolderModal';
@@ -83,14 +82,16 @@ const RESUME_DESKTOP_ICON: FolderType = {
   description: 'Open resume PDF in your browser',
 };
 
-// Directly download the resume PDF instead of opening it
-const downloadResumePdf = () => {
-  const a = document.createElement('a');
-  a.href = RESUME_PDF_URL;
-  a.download = 'Yonathan_Altaye_CV.pdf';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+// Contact Me shortcut — opens the Contact window (hub for email, GitHub, LinkedIn, Fiverr & Upwork)
+const CONTACT_DESKTOP_ICON: FolderType = {
+  id: 'desktop-contact-me',
+  name: 'Contact Me',
+  icon: 'document',
+  color: 'purple',
+  parentId: null,
+  createdAt: '2026-01-01T00:00:00.000Z',
+  isSystem: true,
+  description: 'Open all my contact links and send a message',
 };
 
 // Per-app title bar icons (Fluent style)
@@ -627,26 +628,6 @@ export default function App() {
         ? 'grid-rows-[repeat(auto-fill,88px)] auto-cols-[92px]'
         : 'grid-rows-[repeat(auto-fill,100px)] auto-cols-[108px]';
 
-  const shortcutAction = (id: string) => {
-    switch (id) {
-      case 'this-pc':
-      case 'network':
-        openFileExplorerWindow('this-pc');
-        break;
-      case 'downloads': openFileExplorerWindow('downloads'); break;
-      case 'documents': openFileExplorerWindow('documents'); break;
-      case 'pictures': openFileExplorerWindow('pictures'); break;
-      case 'music': openFileExplorerWindow('music'); break;
-      case 'videos': openFileExplorerWindow('videos'); break;
-      case 'recycle-bin': openFileExplorerWindow('recycle-bin'); break;
-      case 'resume': window.open(RESUME_PDF_URL, '_blank', 'noopener,noreferrer'); break;
-      case 'projects': openFolderWindow('folder-software-dev'); break;
-      case 'github': openBrowserWindow(profile.github || DEFAULT_BROWSER_URL); break;
-      case 'linkedin': openBrowserWindow(profile.linkedin || DEFAULT_BROWSER_URL); break;
-      default: break;
-    }
-  };
-
   return (
     <div
       id="windows-desktop-root"
@@ -689,14 +670,23 @@ export default function App() {
             );
           })}
 
-          {/* Resume PDF shortcut — opens the CV in a new browser tab, with a download badge */}
+          {/* Resume PDF shortcut — opens the CV in a new browser tab */}
           <DesktopIcon
             key={RESUME_DESKTOP_ICON.id}
             folder={RESUME_DESKTOP_ICON}
             isSelected={selectedDesktopId === RESUME_DESKTOP_ICON.id}
             onSelect={() => setSelectedDesktopId(RESUME_DESKTOP_ICON.id)}
             onOpen={() => window.open(RESUME_PDF_URL, '_blank', 'noopener,noreferrer')}
-            onDownload={downloadResumePdf}
+            size={desktopIconSize}
+          />
+
+          {/* Contact Me shortcut — opens the Contact window with all contact links */}
+          <DesktopIcon
+            key={CONTACT_DESKTOP_ICON.id}
+            folder={CONTACT_DESKTOP_ICON}
+            isSelected={selectedDesktopId === CONTACT_DESKTOP_ICON.id}
+            onSelect={() => setSelectedDesktopId(CONTACT_DESKTOP_ICON.id)}
+            onOpen={() => openAppWindow('contact')}
             size={desktopIconSize}
           />
 
@@ -809,7 +799,7 @@ export default function App() {
       {/* Desktop context menu */}
       {desktopContextMenu && (
         <div
-          className="fixed z-[120] w-52 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200"
+          className="fixed z-[120] w-52 bg-slate-700/95 backdrop-blur-xl border border-slate-600/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200"
           style={{ top: desktopContextMenu.y, left: desktopContextMenu.x }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -826,7 +816,7 @@ export default function App() {
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
             {submenu === 'view' && (
-              <div className="absolute left-[98%] top-0 w-44 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
+              <div className="absolute left-[98%] top-0 w-44 bg-slate-700/95 backdrop-blur-xl border border-slate-600/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
                 <button
                   onClick={() => { setDesktopIconSize('large'); setDesktopContextMenu(null); setSubmenu(null); }}
                   className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
@@ -873,7 +863,7 @@ export default function App() {
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
             {submenu === 'sort' && (
-              <div className="absolute left-[98%] top-0 w-40 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
+              <div className="absolute left-[98%] top-0 w-40 bg-slate-700/95 backdrop-blur-xl border border-slate-600/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
                 <button
                   onClick={() => { setDesktopSortBy('name'); setDesktopContextMenu(null); setSubmenu(null); }}
                   className="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-800 transition-colors"
@@ -922,7 +912,7 @@ export default function App() {
               <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
             </button>
             {submenu === 'new' && (
-              <div className="absolute left-[98%] top-0 w-44 bg-slate-900/95 backdrop-blur-xl border border-slate-700/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
+              <div className="absolute left-[98%] top-0 w-44 bg-slate-700/95 backdrop-blur-xl border border-slate-600/80 rounded-xl shadow-2xl py-1 text-xs text-slate-200">
                 <button
                   onClick={() => { handleOpenAddFolder(null); setDesktopContextMenu(null); setSubmenu(null); }}
                   className="flex items-center gap-2.5 w-full px-3 py-2 hover:bg-slate-800 transition-colors text-left"

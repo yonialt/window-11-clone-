@@ -43,6 +43,12 @@ interface PinnedApp {
 
 type FlyoutType = 'quick' | 'calendar' | 'notifications' | 'lang' | null;
 
+// Input languages shown in the taskbar language selector (English + Amharic only)
+const LANGUAGES = [
+  { code: 'ENG', label: 'English (United States)', display: 'ENG' },
+  { code: 'AMH', label: 'አማርኛ (ኢትዮጵያ)', display: 'አማ' },
+] as const;
+
 const TaskbarIcon: React.FC<{
   id: string;
   onClick: () => void;
@@ -142,6 +148,8 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   const [date, setDate] = useState('');
   const [activeFlyout, setActiveFlyout] = useState<FlyoutType>(null);
   const flyoutRef = React.useRef<HTMLDivElement>(null);
+  const [currentLang, setCurrentLang] = useState<string>('ENG');
+  const currentLangInfo = LANGUAGES.find((l) => l.code === currentLang) ?? LANGUAGES[0];
 
   useEffect(() => {
     const update = () => {
@@ -459,7 +467,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             whileHover={{ background: 'rgba(255,255,255,0.08)' }}
             title="Input indicator"
           >
-            ENG
+            {currentLangInfo.display}
           </motion.button>
 
           <motion.button
@@ -521,20 +529,17 @@ export const Taskbar: React.FC<TaskbarProps> = ({
                 className="w-48 rounded-2xl overflow-hidden shadow-2xl border border-white/10 text-slate-100 py-1.5"
                 style={{ background: 'rgba(32,32,32,0.97)', backdropFilter: 'blur(40px)' }}
               >
-                {[
-                  { code: 'ENG', label: 'English (United States)' },
-                  { code: 'ESP', label: 'Español (España)' },
-                  { code: 'FRA', label: 'Français (France)' },
-                  { code: 'DEU', label: 'Deutsch (Deutschland)' },
-                  { code: 'JPN', label: '日本語 (日本)' },
-                ].map((lang) => (
+                {LANGUAGES.map((lang) => (
                   <button
                     key={lang.code}
-                    onClick={() => setActiveFlyout(null)}
+                    onClick={() => {
+                      setCurrentLang(lang.code);
+                      setActiveFlyout(null);
+                    }}
                     className="w-full flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:bg-white/8 transition-colors text-left"
                   >
                     <span>{lang.label}</span>
-                    {lang.code === 'ENG' && <Check className="w-3.5 h-3.5 text-blue-400" />}
+                    {lang.code === currentLang && <Check className="w-3.5 h-3.5 text-blue-400" />}
                   </button>
                 ))}
               </div>
