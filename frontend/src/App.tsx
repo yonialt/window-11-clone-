@@ -59,6 +59,7 @@ import { CalculatorWindow } from './components/CalculatorWindow';
 import { NotepadWindow } from './components/NotepadWindow';
 import { SearchPanel } from './components/SearchPanel';
 import { FileExplorerApp } from './components/FileExplorerApp';
+import { MobileNotice } from './components/MobileNotice';
 
 const STORAGE_KEYS = {
   FOLDERS: 'portfolio_os_folders_v4',
@@ -119,7 +120,48 @@ export default function App() {
 
   const [projects, setProjects] = useState<Project[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PROJECTS);
-    return saved ? JSON.parse(saved) : INITIAL_PROJECTS;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          let merged: Project[] = parsed;
+          // One-time merge: prepend any projects introduced after the user's first visit
+          // (e.g. the SRMS final-year project and new certificates) so returning visitors
+          // see them without wiping saved data.
+          const missing = INITIAL_PROJECTS.filter(
+            (p) => !parsed.some((s: Project) => s.id === p.id)
+          );
+          if (missing.length > 0) merged = [...missing, ...parsed];
+          // One-time thumbnail migration: swap the previous stock Unsplash images for the
+          // new SRMS dashboard screenshot and the real certificate preview thumbnails.
+          // Never overwrite an image the user set manually.
+          const OLD_THUMBNAILS: Record<string, string> = {
+            'proj-final-year-srms':
+              'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80',
+            'proj-ccna-certificate':
+              'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80',
+            'proj-aws-certificate':
+              'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80',
+          };
+          const needsRefresh = merged.some(
+            (p: Project) => !!p.imageUrl && OLD_THUMBNAILS[p.id] === p.imageUrl
+          );
+          if (needsRefresh) {
+            return merged.map((p: Project) => {
+              const fresh = INITIAL_PROJECTS.find((f) => f.id === p.id);
+              return fresh && OLD_THUMBNAILS[p.id] === p.imageUrl
+                ? { ...p, imageUrl: fresh.imageUrl }
+                : p;
+            });
+          }
+          return merged;
+        }
+        return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return INITIAL_PROJECTS;
   });
 
   const [currentWallpaper, setCurrentWallpaper] = useState<Wallpaper>(() => {
@@ -1023,6 +1065,9 @@ export default function App() {
           setIsSearchOpen(false);
         }}
       />
+
+      {/* Mobile-only desktop notice */}
+      <MobileNotice />
 
       {/* Modals */}
       <FolderModal

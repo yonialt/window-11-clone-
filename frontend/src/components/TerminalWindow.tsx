@@ -30,7 +30,7 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
       cmd: 'welcome',
       output: (
         <div className="space-y-1 text-slate-300">
-          <p className="text-amber-400 font-bold">
+          <p className="text-white font-bold">
             Windows Portfolio CLI v2026.1 [Version 10.0.22631]
           </p>
           <p className="text-slate-400">
@@ -62,13 +62,13 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
       case 'help':
         output = (
           <div className="space-y-1 text-xs">
-            <p className="text-amber-400 font-bold">Available Commands:</p>
-            <p><span className="font-mono text-emerald-400 w-24 inline-block">ls / dir</span> List all desktop folders & projects</p>
-            <p><span className="font-mono text-emerald-400 w-24 inline-block">open &lt;name&gt;</span> Open folder or project by name</p>
-            <p><span className="font-mono text-emerald-400 w-24 inline-block">mkdir</span> Launch new folder dialog</p>
-            <p><span className="font-mono text-emerald-400 w-24 inline-block">addproj</span> Launch add project dialog</p>
-            <p><span className="font-mono text-emerald-400 w-24 inline-block">whoami</span> Display developer profile details</p>
-            <p><span className="font-mono text-emerald-400 w-24 inline-block">clear / cls</span> Clear terminal history</p>
+            <p className="text-white font-bold">Available Commands:</p>
+            <p><span className="font-mono text-white w-24 inline-block">ls / dir</span> List all desktop folders & projects</p>
+            <p><span className="font-mono text-white w-24 inline-block">open &lt;name&gt;</span> Open folder or project by name</p>
+            <p><span className="font-mono text-white w-24 inline-block">mkdir</span> Launch new folder dialog</p>
+            <p><span className="font-mono text-white w-24 inline-block">addproj</span> Launch add project dialog</p>
+            <p><span className="font-mono text-white w-24 inline-block">whoami</span> Display developer profile details</p>
+            <p><span className="font-mono text-white w-24 inline-block">clear / cls</span> Clear terminal history</p>
           </div>
         );
         break;
@@ -78,7 +78,7 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
         output = (
           <div className="space-y-2 text-xs">
             <div>
-              <p className="text-amber-400 font-bold mb-1">Folders ({folders.length}):</p>
+              <p className="text-white font-bold mb-1">Folders ({folders.length}):</p>
               <div className="grid grid-cols-2 gap-1 text-slate-300">
                 {folders.map((f) => (
                   <span key={f.id} className="text-blue-400">
@@ -88,7 +88,7 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
               </div>
             </div>
             <div>
-              <p className="text-amber-400 font-bold mb-1">Projects ({projects.length}):</p>
+              <p className="text-white font-bold mb-1">Projects ({projects.length}):</p>
               <div className="space-y-0.5 text-slate-300">
                 {projects.map((p) => (
                   <p key={p.id}>
@@ -114,12 +114,12 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
 
       case 'mkdir':
         onOpenAddFolderModal();
-        output = <p className="text-emerald-400">Opening new folder dialog...</p>;
+        output = <p className="text-white">Opening new folder dialog...</p>;
         break;
 
       case 'addproj':
         onOpenAddProjectModal();
-        output = <p className="text-emerald-400">Opening add project dialog...</p>;
+        output = <p className="text-white">Opening add project dialog...</p>;
         break;
 
       case 'open':
@@ -130,7 +130,7 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
           const targetFolder = folders.find((f) => f.name.toLowerCase().includes(searchName));
           if (targetFolder) {
             onOpenFolder(targetFolder.id);
-            output = <p className="text-emerald-400">Opening folder '{targetFolder.name}'...</p>;
+            output = <p className="text-white">Opening folder '{targetFolder.name}'...</p>;
           } else {
             output = <p className="text-rose-400">No folder found matching '{searchName}'</p>;
           }
@@ -157,11 +157,11 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 font-mono text-xs text-slate-200 p-4 overflow-y-auto">
+    <div className="flex flex-col h-full bg-black font-mono text-xs text-slate-200 p-4 overflow-y-auto">
       {history.map((item, idx) => (
         <div key={idx} className="mb-3 space-y-1">
           <div className="flex items-center gap-2 text-slate-400">
-            <span className="text-emerald-400 font-bold">PS C:\Users\Yonatan\Portfolio&gt;</span>
+            <span className="text-white font-bold">PS C:\Users\Yonatan\Portfolio&gt;</span>
             <span className="text-white font-medium">{item.cmd}</span>
           </div>
           <div className="pl-4">{item.output}</div>
@@ -170,7 +170,7 @@ export const TerminalWindow: React.FC<TerminalWindowProps> = ({
 
       {/* Input Prompt */}
       <form onSubmit={handleCommand} className="flex items-center gap-2 mt-1">
-        <span className="text-emerald-400 font-bold shrink-0">PS C:\Users\Yonatan\Portfolio&gt;</span>
+        <span className="text-white font-bold shrink-0">PS C:\Users\Yonatan\Portfolio&gt;</span>
         <input
           type="text"
           value={input}

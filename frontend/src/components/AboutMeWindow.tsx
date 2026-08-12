@@ -57,7 +57,7 @@ export const AboutMeWindow: React.FC<AboutMeWindowProps> = ({ profile }) => {
 
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { label: 'Projects', value: '4+' },
+            { label: 'Projects', value: '6+' },
             { label: 'Experience', value: '2+ yrs' },
             { label: 'Technologies', value: '20+' },
           ].map((stat) => (

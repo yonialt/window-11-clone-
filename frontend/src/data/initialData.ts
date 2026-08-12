@@ -1,6 +1,9 @@
 import { Folder, Project, Wallpaper, DeveloperProfile } from '../types';
 import win11Wallpaper from '../assets/icons/win11wallpaper.jpg';
-import yo from '../assets/icons/yo.jpg'
+import yo from '../assets/icons/yo.jpg';
+import srmsDashboard from '../assets/projects/srms-dashboard.png';
+import ccnaCertificate from '../assets/projects/ccna-certificate.jpg';
+import awsCertificate from '../assets/projects/aws-certificate.jpg';
 
 export const PROFILE_LINKS = {
   github: 'https://github.com/yonialt',
@@ -87,6 +90,21 @@ export const INITIAL_PROJECTS: Project[] = [
     updatedAt: '2026-01-15T14:00:00.000Z',
   },
   {
+    id: 'proj-final-year-srms',
+    title: 'AI-Integrated Smart Resource Management System (SRMS)',
+    tagline: 'Final Year Project — University of Gondar · Role-based resource lifecycle management with AI repair/replace decisions',
+    description: 'A full-stack university resource management portal. Staff request new resources and report damaged ones; requests flow through multi-level approval (Department Head → Academic Dean → Resource Officer); technicians handle maintenance; and a Python-based Random Forest engine recommends whether to repair or replace each asset. Includes JWT authentication, role-based access control for six roles, analytics dashboards, and a separate Flask AI microservice.',
+    folderId: 'folder-software-dev',
+    tags: ['React', 'Express', 'JWT', 'RBAC', 'AI', 'Final Year Project'],
+    techStack: ['React + Vite', 'Tailwind CSS', 'Node.js + Express', 'JWT Auth + RBAC', 'Prisma + PostgreSQL (NeonDB)', 'Python + Flask', 'Scikit-learn (Random Forest)'],
+    imageUrl: srmsDashboard,
+    liveUrl: 'https://final-year-project-weld-phi.vercel.app/login',
+    githubUrl: 'https://github.com/yonialt/Final-year-project-',
+    featured: true,
+    createdAt: '2026-06-01T10:00:00.000Z',
+    updatedAt: '2026-06-01T10:00:00.000Z',
+  },
+  {
     id: 'proj-ai-resource',
     title: 'AI Smart Resource Management System',
     tagline: 'AI-driven resource allocation with role-based access control',
@@ -133,11 +151,25 @@ export const INITIAL_PROJECTS: Project[] = [
     folderId: 'folder-certificates',
     tags: ['CCNA', 'Cisco', 'Networking', 'Certification'],
     techStack: ['CCNA 200-301', 'Network Fundamentals', 'Routing & Switching', 'TCP/IP'],
-    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80',
+    imageUrl: ccnaCertificate,
     liveUrl: 'https://www.simplilearn.com/skillup-certificate-landing?token=eyJjb3Vyc2VfaWQiOiIyNDE1IiwiY2VydGlmaWNhdGVfdXJsIjoiaHR0cHM6XC9cL2NlcnRpZmljYXRlcy5zaW1wbGljZG4ubmV0XC9zaGFyZVwvMTA1ODQ4MjRfMTA5MjQ0MzRfMTc4NjQwMzE4NDkyMy5wbmciLCJ1c2VybmFtZSI6InlvbmF0aGFuIGFsdGF5ZSJ9&utm_source=shared-certificate&utm_medium=lms&utm_campaign=shared-certificate-promotion&referrer=https%3A%2F%2Flms.simplilearn.com%2Fcourses%2F5061%2FLearn-CCNA-200-301-Network-Fundamentals-Online%2Fcertificate%2Fdownload-skillup&%24web_only=true&_branch_match_id=1615500060220599587&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXL87MLcjJ1EssKNDLyczL1k%2FVdw7JTC43y0wsM02yrytKTUstKsrMS49PKsovL04tsvUBqkpN8cwDAKd%2BvohBAAAA',
     featured: false,
     createdAt: '2026-03-10T09:00:00.000Z',
     updatedAt: '2026-03-10T09:00:00.000Z',
+  },
+  {
+    id: 'proj-aws-certificate',
+    title: 'Getting Started with AWS',
+    tagline: 'Verified course completion certificate from Simplilearn SkillUp',
+    description: 'Completed the Getting Started with AWS online course on Simplilearn SkillUp. This verified certificate confirms foundational cloud knowledge — AWS global infrastructure, core services like EC2, S3, IAM, and Lambda, and basic cloud architecture concepts. Click “Launch Live Preview” to view and download the official certificate.',
+    folderId: 'folder-certificates',
+    tags: ['AWS', 'Cloud', 'Amazon Web Services', 'Certification'],
+    techStack: ['AWS', 'EC2', 'S3', 'IAM', 'Lambda', 'Cloud Fundamentals'],
+    imageUrl: awsCertificate,
+    liveUrl: 'https://www.simplilearn.com/skillup-certificate-landing?token=eyJjb3Vyc2VfaWQiOiIxNzI5IiwiY2VydGlmaWNhdGVfdXJsIjoiaHR0cHM6XC9cL2NlcnRpZmljYXRlcy5zaW1wbGljZG4ubmV0XC9zaGFyZVwvMTA1ODc4OTRfMTA5MjQ0MzRfMTc4NjQ2MDYwNzc5Ni5wbmciLCJ1c2VybmFtZSI6InlvbmF0aGFuIGFsdGF5ZSJ9&utm_source=shared-certificate&utm_medium=lms&utm_campaign=shared-certificate-promotion&referrer=https%3A%2F%2Flms.simplilearn.com%2Fcourses%2F4226%2FGetting-Started-with-AWS%2Fcertificate%2Fdownload-skillup&%24web_only=true&_branch_match_id=1616042900000963772&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXL87MLcjJ1EssKNDLyczL1k%2FVN8%2F19LFI9EgvN00CAFh3ERQlAAAA',
+    featured: false,
+    createdAt: '2026-08-12T10:00:00.000Z',
+    updatedAt: '2026-08-12T10:00:00.000Z',
   },
 ];
 
