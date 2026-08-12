@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Code, Sparkles, Plus, Trash2, Link as LinkIcon, Github, Image as ImageIcon } from 'lucide-react';
 import { Project, Folder as FolderType } from '../types';
 
@@ -28,8 +28,10 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   const [githubUrl, setGithubUrl] = useState('');
   const [liveUrl, setLiveUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
+  const [imageError, setImageError] = useState('');
   const [featured, setFeatured] = useState(false);
   const [stars, setStars] = useState<number>(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (projectToEdit) {
@@ -60,6 +62,53 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
   }, [projectToEdit, defaultFolderId, isOpen]);
 
   if (!isOpen) return null;
+
+  // Raster formats only (SVG can taint the canvas and break data-URL export)
+  const isSupportedImage = (file: File) => {
+    if (file.type) return /^image\/(png|jpe?g|webp|gif|bmp)$/.test(file.type);
+    // Some systems report an empty MIME type — fall back to the file extension
+    return /\.(png|jpe?g|webp|gif|bmp)$/i.test(file.name);
+  };
+
+  // Reads a picked image, resizes it to a small cover thumbnail and stores it
+  // as a data URL so it works with the browser-local project storage.
+  const handleImageFile = (file: File) => {
+    setImageError('');
+    if (!isSupportedImage(file)) {
+      setImageError('Please choose an image file (PNG, JPG, WebP, GIF).');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setImageError('Image is too large (max 10 MB).');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 900;
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          setImageError('Could not process this image.');
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        try {
+          setImageUrl(canvas.toDataURL('image/jpeg', 0.82));
+        } catch {
+          setImageError('Could not process this image (unsupported format).');
+        }
+      };
+      img.onerror = () => setImageError('Could not read this image.');
+      img.src = String(reader.result);
+    };
+    reader.onerror = () => setImageError('Could not read this file.');
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -256,18 +305,70 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({
             </div>
           </div>
 
-          {/* Cover Image URL */}
+          {/* Cover / Screenshot Image */}
           <div>
             <label className="block font-semibold text-slate-300 mb-1">
-              Cover / Screenshot Image URL
+              Cover / Screenshot Image
             </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="url"
+                placeholder="Paste an image URL (https://...) or upload a file"
+                value={imageUrl}
+                onChange={(e) => {
+                  setImageError('');
+                  setImageUrl(e.target.value);
+                }}
+                className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors shrink-0"
+                title="Upload image from your computer"
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                Upload
+              </button>
+            </div>
             <input
-              type="url"
-              placeholder="https://images.unsplash.com/photo-..."
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 placeholder-slate-500 focus:outline-none"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleImageFile(file);
+                e.target.value = '';
+              }}
             />
+            {imageUrl && (
+              <div className="mt-2 flex items-center gap-3">
+                <img
+                  src={imageUrl}
+                  alt="Cover preview"
+                  className="w-32 h-20 object-cover rounded-lg border border-slate-700 bg-slate-950"
+                />
+                <div className="flex flex-col gap-1 text-[11px] text-slate-400">
+                  <span>
+                    {imageUrl.startsWith('data:')
+                      ? 'Uploaded image (resized & stored in browser)'
+                      : 'Remote image URL'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImageError('');
+                      setImageUrl('');
+                    }}
+                    className="text-rose-400 hover:underline w-fit"
+                  >
+                    Remove image
+                  </button>
+                </div>
+              </div>
+            )}
+            {imageError && <p className="mt-1.5 text-[11px] text-rose-400">{imageError}</p>}
           </div>
 
           {/* Featured Toggle */}

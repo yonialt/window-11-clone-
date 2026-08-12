@@ -28,6 +28,8 @@ interface TaskbarProps {
   onToggleTaskView: () => void;
   isTaskViewOpen?: boolean;
   windows: WindowItem[];
+  /** Per-window-type icons (same set as the window title bars) */
+  windowIcons: Record<string, React.ReactNode>;
   activeWindowId: string | null;
   isStartMenuOpen: boolean;
   onToggleStartMenu: () => void;
@@ -35,10 +37,14 @@ interface TaskbarProps {
 }
 
 interface PinnedApp {
+  /** DOM id for the taskbar button */
   id: string;
+  /** Match key used to group windows under this pin (see appIdForWindow) */
+  appId: string;
   label: string;
   icon: React.ReactNode;
-  onClick: () => void;
+  /** Launch the app when no window for it is open yet */
+  launch: () => void;
 }
 
 type FlyoutType = 'quick' | 'calendar' | 'notifications' | 'lang' | null;
@@ -136,6 +142,7 @@ export const Taskbar: React.FC<TaskbarProps> = ({
   onOpenSettings,
   onOpenSearch,
   windows,
+  windowIcons,
   activeWindowId,
   isStartMenuOpen,
   onToggleStartMenu,
@@ -199,23 +206,44 @@ export const Taskbar: React.FC<TaskbarProps> = ({
     onToggleStartMenu();
   };
 
-  // Matches a window to a pinned app (e.g. app-settings <-> Settings pin)
-  const matchesPinnedApp = (win: WindowItem, app: PinnedApp) =>
-    win.id.includes(app.id.replace('taskbar-pin-', ''));
+  // Maps a window to the taskbar app that represents it. Folder windows and
+  // File Explorer share the Explorer pin; every other window type maps to its
+  // own app (calculator -> Calculator icon, contact -> Contact icon, ...).
+  const appIdForWindow = (win: WindowItem): string => {
+    if (win.type === 'folder' || win.type === 'file-explorer') return 'explorer';
+    return win.type;
+  };
 
-  // True when a window belongs to any pinned app
+  // True when a window is represented by one of the always-pinned app icons
   const isPinnedAppWindow = (win: WindowItem) =>
-    pinnedApps.some((app) => matchesPinnedApp(win, app));
+    pinnedApps.some((app) => appIdForWindow(win) === app.appId);
+
+  // Taskbar icon click: launch the app when nothing is running, otherwise
+  // toggle/focus the most relevant window (the active one, else the most
+  // recently focused) via the same logic used by running-window buttons.
+  const handleAppClick = (app: PinnedApp) => {
+    const appWindows = windows.filter((w) => appIdForWindow(w) === app.appId);
+    if (appWindows.length === 0) {
+      app.launch();
+      return;
+    }
+    const representative =
+      appWindows.find((w) => w.id === activeWindowId) ??
+      appWindows.reduce((a, b) => (a.zIndex > b.zIndex ? a : b));
+    onWindowClick(representative);
+  };
 
   const pinnedApps: PinnedApp[] = [
     {
       id: 'taskbar-pin-explorer',
+      appId: 'explorer',
       label: 'File Explorer',
       icon: <img src={windowsExplorer} alt="File Explorer" className="w-5 h-5 object-contain" />,
-      onClick: onOpenFileExplorer,
+      launch: onOpenFileExplorer,
     },
     {
       id: 'taskbar-pin-browser',
+      appId: 'browser',
       label: 'Browser',
       icon: (
         <svg
@@ -259,19 +287,21 @@ export const Taskbar: React.FC<TaskbarProps> = ({
           />
         </svg>
       ),
-      onClick: onOpenBrowser,
+      launch: onOpenBrowser,
     },
     {
       id: 'taskbar-pin-terminal',
+      appId: 'terminal',
       label: 'Terminal',
       icon: <Terminal className="w-5 h-5" style={{ color: '#090a0aff' }} />,
-      onClick: onOpenTerminal,
+      launch: onOpenTerminal,
     },
     {
       id: 'taskbar-pin-settings',
+      appId: 'settings',
       label: 'Settings',
       icon: <img src={settings} alt="Settings" className="w-5 h-5 object-contain" />,
-      onClick: onOpenSettings,
+      launch: onOpenSettings,
     },
   ];
 
@@ -354,64 +384,45 @@ export const Taskbar: React.FC<TaskbarProps> = ({
             </svg>
           </TaskbarIcon>
 
-          {/* Pinned apps */}
+          {/* Pinned apps — folder & File Explorer windows all light up the Explorer pin */}
           {pinnedApps.map((app) => {
-            const runningWin = windows.find((w) => matchesPinnedApp(w, app));
-            const isActive = runningWin ? activeWindowId === runningWin.id && !runningWin.isMinimized : false;
+            const appWindows = windows.filter((w) => appIdForWindow(w) === app.appId);
+            const activeWin = appWindows.find((w) => w.id === activeWindowId);
+            const isActive = !!activeWin && !activeWin.isMinimized;
             return (
               <TaskbarIcon
                 key={app.id}
                 id={app.id}
-                onClick={app.onClick}
+                onClick={() => handleAppClick(app)}
                 title={app.label}
                 isActive={isActive}
-                hasRunning={!!runningWin}
+                hasRunning={appWindows.length > 0}
               >
                 {app.icon}
               </TaskbarIcon>
             );
           })}
 
-          {/* Open window tabs — only for windows not already represented by a pinned icon */}
+          {/* Running app icons — one button per window not covered by a pinned icon */}
           {windows
             .filter((win) => !isPinnedAppWindow(win))
             .map((win) => {
               const isActive = activeWindowId === win.id && !win.isMinimized;
               return (
-                <div key={win.id} className="relative flex flex-col items-center justify-center">
-                <motion.button
+                <TaskbarIcon
+                  key={win.id}
                   id={`taskbar-win-${win.id}`}
                   onClick={() => onWindowClick(win)}
-                  className="flex items-center gap-1.5 rounded text-xs"
-                  style={{
-                    height: 30,
-                    padding: '0 10px',
-                    maxWidth: 140,
-                    background: isActive ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.04)',
-                    color: isActive ? '#fff' : 'rgba(255,255,255,0.65)',
-                    fontFamily: '"Segoe UI", Inter, sans-serif',
-                    fontSize: 12,
-                    borderRadius: 4,
-                    border: isActive ? '1px solid rgba(255,255,255,0.12)' : '1px solid transparent',
-                    overflow: 'hidden',
-                    whiteSpace: 'nowrap',
-                    textOverflow: 'ellipsis',
-                  }}
-                  whileHover={{ background: 'rgba(255,255,255,0.10)' }}
-                  whileTap={{ scale: 0.95 }}
+                  title={win.title}
+                  isActive={isActive}
+                  hasRunning
                 >
-                  <FolderOpen className="w-3.5 h-3.5 shrink-0" style={{ color: '#FDB44B' }} />
-                  <span className="truncate">{win.title}</span>
-                  </motion.button>
-                  <div
-                    className="absolute bottom-[3px] rounded-full transition-all"
-                    style={{
-                      height: 3,
-                      width: isActive ? 16 : 6,
-                      background: isActive ? '#4FC3F7' : 'rgba(255,255,255,0.4)',
-                    }}
-                  />
-                </div>
+                  <span className="flex items-center justify-center" style={{ width: 20, height: 20 }}>
+                    {windowIcons[win.type] ?? (
+                      <FolderOpen className="w-4 h-4" style={{ color: '#FDB44B' }} />
+                    )}
+                  </span>
+                </TaskbarIcon>
               );
             })}
         </div>

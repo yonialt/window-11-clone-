@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Folder as FolderType,
@@ -60,6 +60,8 @@ import { NotepadWindow } from './components/NotepadWindow';
 import { SearchPanel } from './components/SearchPanel';
 import { FileExplorerApp } from './components/FileExplorerApp';
 import { MobileNotice } from './components/MobileNotice';
+import { UACModal } from './components/UACModal';
+import { authenticateAdmin } from './lib/adminAuth';
 
 const STORAGE_KEYS = {
   FOLDERS: 'portfolio_os_folders_v4',
@@ -189,7 +191,7 @@ export default function App() {
   const [topZIndex, setTopZIndex] = useState(10);
 
   // UI Popups & Modals State
-  const [selectedDesktopId, setSelectedDesktopId] = useState<string | null>(null);
+  const [selectedDesktopIds, setSelectedDesktopIds] = useState<string[]>([]);
   const [isStartMenuOpen, setIsStartMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isTaskViewOpen, setIsTaskViewOpen] = useState(false);
@@ -201,6 +203,12 @@ export default function App() {
   const [desktopSortBy, setDesktopSortBy] = useState<'name' | 'date' | null>(null);
   const [submenu, setSubmenu] = useState<'view' | 'sort' | 'new' | null>(null);
 
+  // Desktop rubber-band selection (marquee)
+  const [marquee, setMarquee] = useState<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [isMarqueeDragging, setIsMarqueeDragging] = useState(false);
+  const marqueeDragRef = useRef<{ startX: number; startY: number } | null>(null);
+  const suppressClickRef = useRef(false);
+
   // Folder Modal State
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
   const [folderToEdit, setFolderToEdit] = useState<FolderType | null>(null);
@@ -210,6 +218,17 @@ export default function App() {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<Project | null>(null);
   const [defaultProjectFolderId, setDefaultProjectFolderId] = useState<string>('folder-software-dev');
+
+  // Admin auth (UAC gate) — every write operation prompts for an administrator
+  // password. Auth is deliberately one-shot: after the single requested action
+  // completes, the gate re-locks so the next action prompts again.
+  const [uacRequest, setUacRequest] = useState<{
+    title: string;
+    description: string;
+    action: () => void;
+  } | null>(null);
+  const [uacError, setUacError] = useState<string | null>(null);
+  const [uacVerifying, setUacVerifying] = useState(false);
 
   // Global keyboard shortcuts: ESC closes overlays, Windows key toggles Start Menu
   useEffect(() => {
@@ -552,17 +571,51 @@ export default function App() {
     );
   };
 
+  // ── Admin authentication (UAC gate) ──
+  // Always prompts for credentials — no session state is kept, so every
+  // Add/Edit/Delete requires a fresh confirmation.
+  const requireAdmin = (title: string, description: string, action: () => void) => {
+    setUacError(null);
+    setUacRequest({ title, description, action });
+  };
+
+  const handleUacConfirm = async (username: string, password: string) => {
+    if (!uacRequest || uacVerifying) return;
+    setUacVerifying(true);
+    setUacError(null);
+    const result = await authenticateAdmin(username, password);
+    setUacVerifying(false);
+    if (result.success) {
+      // Perform the single requested action, then re-lock for the next one
+      const action = uacRequest.action;
+      setUacRequest(null);
+      action();
+    } else {
+      setUacError(result.message ?? 'Incorrect credentials');
+    }
+  };
+
+  const handleUacCancel = () => {
+    setUacRequest(null);
+    setUacError(null);
+    setUacVerifying(false);
+  };
+
   // ── Folder / Project CRUD ──
   const handleOpenAddFolder = (parentId: string | null = null) => {
-    setFolderToEdit(null);
-    setDefaultParentFolderId(parentId);
-    setIsFolderModalOpen(true);
+    requireAdmin('New Folder', 'Portfolio OS wants to create a new folder on the desktop.', () => {
+      setFolderToEdit(null);
+      setDefaultParentFolderId(parentId);
+      setIsFolderModalOpen(true);
+    });
   };
 
   const handleOpenEditFolder = (folder: FolderType) => {
-    setFolderToEdit(folder);
-    setDefaultParentFolderId(folder.parentId);
-    setIsFolderModalOpen(true);
+    requireAdmin('Edit Folder', `Portfolio OS wants to modify "${folder.name}".`, () => {
+      setFolderToEdit(folder);
+      setDefaultParentFolderId(folder.parentId);
+      setIsFolderModalOpen(true);
+    });
   };
 
   const handleSaveFolder = (folderData: {
@@ -595,22 +648,33 @@ export default function App() {
   };
 
   const handleDeleteFolder = (folderId: string) => {
-    if (window.confirm('Are you sure you want to delete this folder and its project references?')) {
-      setFolders((prev) => prev.filter((f) => f.id !== folderId));
-      closeWindow(`folder-${folderId}`);
-    }
+    const target = folders.find((f) => f.id === folderId);
+    requireAdmin(
+      'Delete Folder',
+      `Portfolio OS wants to permanently delete "${target?.name ?? 'this folder'}" and its project references.`,
+      () => {
+        if (window.confirm('Are you sure you want to delete this folder and its project references?')) {
+          setFolders((prev) => prev.filter((f) => f.id !== folderId));
+          closeWindow(`folder-${folderId}`);
+        }
+      }
+    );
   };
 
   const handleOpenAddProject = (folderId: string = 'folder-software-dev') => {
-    setProjectToEdit(null);
-    setDefaultProjectFolderId(folderId);
-    setIsProjectModalOpen(true);
+    requireAdmin('Add Project', 'Portfolio OS wants to add a new portfolio project.', () => {
+      setProjectToEdit(null);
+      setDefaultProjectFolderId(folderId);
+      setIsProjectModalOpen(true);
+    });
   };
 
   const handleOpenEditProject = (project: Project) => {
-    setProjectToEdit(project);
-    setDefaultProjectFolderId(project.folderId);
-    setIsProjectModalOpen(true);
+    requireAdmin('Edit Project', `Portfolio OS wants to modify "${project.title}".`, () => {
+      setProjectToEdit(project);
+      setDefaultProjectFolderId(project.folderId);
+      setIsProjectModalOpen(true);
+    });
   };
 
   const handleSaveProject = (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -640,16 +704,73 @@ export default function App() {
   };
 
   const handleDeleteProject = (projectId: string) => {
-    if (window.confirm('Delete this project?')) {
-      setProjects((prev) => prev.filter((p) => p.id !== projectId));
-      closeWindow(`project-${projectId}`);
-    }
+    requireAdmin('Delete Project', 'Portfolio OS wants to permanently delete this project.', () => {
+      if (window.confirm('Delete this project?')) {
+        setProjects((prev) => prev.filter((p) => p.id !== projectId));
+        closeWindow(`project-${projectId}`);
+      }
+    });
   };
 
   // ── Desktop ──
+  // Starts a rubber-band selection drag from the given viewport point.
+  const startMarquee = (clientX: number, clientY: number) => {
+    marqueeDragRef.current = { startX: clientX, startY: clientY };
+    setMarquee({ x: clientX, y: clientY, w: 0, h: 0 });
+    setIsMarqueeDragging(true);
+    setSelectedDesktopIds([]);
+    setDesktopContextMenu(null);
+    setSubmenu(null);
+    setIsStartMenuOpen(false);
+  };
+
+  // While dragging: draw the selection box and live-highlight intersecting icons
+  useEffect(() => {
+    if (!isMarqueeDragging) return;
+
+    const onMove = (e: MouseEvent) => {
+      const s = marqueeDragRef.current;
+      if (!s) return;
+      const x = Math.min(s.startX, e.clientX);
+      const y = Math.min(s.startY, e.clientY);
+      const w = Math.abs(e.clientX - s.startX);
+      const h = Math.abs(e.clientY - s.startY);
+      setMarquee({ x, y, w, h });
+
+      // Bounding-box collision test against every desktop icon wrapper
+      const hits: string[] = [];
+      document.querySelectorAll<HTMLElement>('[id^="desktop-icon-"]').forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.left < x + w && r.right > x && r.top < y + h && r.bottom > y) {
+          hits.push(el.id.replace('desktop-icon-', ''));
+        }
+      });
+      setSelectedDesktopIds(hits);
+    };
+
+    const onUp = (e: MouseEvent) => {
+      const s = marqueeDragRef.current;
+      const wasDrag =
+        s !== null && (Math.abs(e.clientX - s.startX) > 4 || Math.abs(e.clientY - s.startY) > 4);
+      marqueeDragRef.current = null;
+      setIsMarqueeDragging(false);
+      setMarquee(null);
+      // A plain click (no drag) clears selection via the root onClick; a real
+      // drag keeps the marquee-selected icons, so suppress that click handler.
+      if (wasDrag) suppressClickRef.current = true;
+    };
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+    return () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+  }, [isMarqueeDragging]);
+
   const handleDesktopContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
-    setSelectedDesktopId(null);
+    setSelectedDesktopIds([]);
     setDesktopContextMenu({ x: e.clientX, y: e.clientY });
   };
 
@@ -676,8 +797,11 @@ export default function App() {
       onContextMenu={handleDesktopContextMenu}
       onClick={(e) => {
         const target = e.target as HTMLElement;
+        const suppressed = suppressClickRef.current;
+        suppressClickRef.current = false;
+        if (suppressed) return;
         if (target.closest('#windows-taskbar')) return;
-        setSelectedDesktopId(null);
+        setSelectedDesktopIds([]);
         setDesktopContextMenu(null);
         setSubmenu(null);
         setIsStartMenuOpen(false);
@@ -688,10 +812,39 @@ export default function App() {
       {/* Light geometry overlay */}
       <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-black/20 pointer-events-none" />
 
+      {/* Marquee drag layer — catches empty-desktop drags to draw the selection box */}
+      <div
+        className="absolute inset-0 z-0"
+        onMouseDown={(e) => {
+          if (e.button !== 0) return;
+          startMarquee(e.clientX, e.clientY);
+          e.preventDefault();
+        }}
+      >
+        {marquee && (
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              left: marquee.x,
+              top: marquee.y,
+              width: marquee.w,
+              height: marquee.h,
+              background: 'rgba(0, 120, 215, 0.25)',
+              border: '1px solid rgba(0, 120, 215, 0.6)',
+            }}
+          />
+        )}
+      </div>
+
       {/* Desktop icons (top-to-bottom grid, Windows spacing) */}
       {showDesktopIcons && (
         <div
           className={`absolute top-2 left-3 z-10 grid grid-flow-col gap-x-1.5 gap-y-1.5 max-h-[calc(100vh-52px)] overflow-hidden pointer-events-auto ${gridClass}`}
+          onMouseDown={(e) => {
+            if (e.button !== 0) return;
+            if ((e.target as HTMLElement).closest('[id^="desktop-icon-"]')) return;
+            startMarquee(e.clientX, e.clientY);
+          }}
         >
 
 
@@ -702,8 +855,8 @@ export default function App() {
                 key={folder.id}
                 folder={folder}
                 itemCount={itemCount}
-                isSelected={selectedDesktopId === folder.id}
-                onSelect={() => setSelectedDesktopId(folder.id)}
+                isSelected={selectedDesktopIds.includes(folder.id)}
+                onSelect={() => setSelectedDesktopIds([folder.id])}
                 onOpen={() => openFolderWindow(folder.id)}
                 onRename={handleOpenEditFolder}
                 onDelete={handleDeleteFolder}
@@ -716,8 +869,8 @@ export default function App() {
           <DesktopIcon
             key={RESUME_DESKTOP_ICON.id}
             folder={RESUME_DESKTOP_ICON}
-            isSelected={selectedDesktopId === RESUME_DESKTOP_ICON.id}
-            onSelect={() => setSelectedDesktopId(RESUME_DESKTOP_ICON.id)}
+            isSelected={selectedDesktopIds.includes(RESUME_DESKTOP_ICON.id)}
+            onSelect={() => setSelectedDesktopIds([RESUME_DESKTOP_ICON.id])}
             onOpen={() => window.open(RESUME_PDF_URL, '_blank', 'noopener,noreferrer')}
             size={desktopIconSize}
           />
@@ -726,8 +879,8 @@ export default function App() {
           <DesktopIcon
             key={CONTACT_DESKTOP_ICON.id}
             folder={CONTACT_DESKTOP_ICON}
-            isSelected={selectedDesktopId === CONTACT_DESKTOP_ICON.id}
-            onSelect={() => setSelectedDesktopId(CONTACT_DESKTOP_ICON.id)}
+            isSelected={selectedDesktopIds.includes(CONTACT_DESKTOP_ICON.id)}
+            onSelect={() => setSelectedDesktopIds([CONTACT_DESKTOP_ICON.id])}
             onOpen={() => openAppWindow('contact')}
             size={desktopIconSize}
           />
@@ -1025,6 +1178,7 @@ export default function App() {
       {/* Taskbar */}
       <Taskbar
         windows={windows}
+        windowIcons={WINDOW_ICONS}
         activeWindowId={activeWindowId}
         isStartMenuOpen={isStartMenuOpen}
         onToggleStartMenu={() => setIsStartMenuOpen(!isStartMenuOpen)}
@@ -1068,6 +1222,17 @@ export default function App() {
 
       {/* Mobile-only desktop notice */}
       <MobileNotice />
+
+      {/* UAC administrator prompt for write operations */}
+      <UACModal
+        open={!!uacRequest}
+        actionTitle={uacRequest?.title ?? ''}
+        actionDescription={uacRequest?.description ?? ''}
+        error={uacError}
+        isVerifying={uacVerifying}
+        onConfirm={handleUacConfirm}
+        onCancel={handleUacCancel}
+      />
 
       {/* Modals */}
       <FolderModal

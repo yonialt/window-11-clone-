@@ -1,6 +1,7 @@
 import express from "express";
 import http from "http";
 import path from "path";
+import crypto from "crypto";
 import { createServer as createViteServer } from "vite";
 
 const app = express();
@@ -154,6 +155,46 @@ let projectsData = [
     updatedAt: new Date().toISOString(),
   },
 ];
+
+// ── Admin authentication (UAC gate) ──
+// Write operations in the UI (add/edit/delete) prompt for an administrator
+// username + password and validate them here. Set ADMIN_USERNAME and
+// ADMIN_PASSWORD in your environment to override the development defaults.
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || "yo";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "yo123";
+const ADMIN_TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h session
+const adminTokens = new Map<string, number>(); // token -> expiry timestamp
+
+if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
+  console.warn("⚠️  ADMIN_USERNAME / ADMIN_PASSWORD not fully set — using defaults (yo / yo123). Set them to change.");
+}
+
+app.post("/api/auth/admin", (req, res) => {
+  const { username, password } = req.body ?? {};
+  const userOk =
+    typeof username === "string" &&
+    username.trim().toLowerCase() === ADMIN_USERNAME.trim().toLowerCase();
+  const passOk = typeof password === "string" && password === ADMIN_PASSWORD;
+  if (!userOk || !passOk) {
+    return res.status(401).json({ success: false, message: "Incorrect credentials" });
+  }
+  const token = crypto.randomBytes(32).toString("hex");
+  adminTokens.set(token, Date.now() + ADMIN_TOKEN_TTL_MS);
+  res.json({ success: true, token, expiresIn: ADMIN_TOKEN_TTL_MS });
+});
+
+app.post("/api/auth/validate", (req, res) => {
+  const token = req.body?.token;
+  const expiry = typeof token === "string" ? adminTokens.get(token) : undefined;
+  if (expiry === undefined) {
+    return res.json({ valid: false });
+  }
+  if (expiry < Date.now()) {
+    adminTokens.delete(token);
+    return res.json({ valid: false });
+  }
+  res.json({ valid: true });
+});
 
 // Backend API Endpoints
 app.get("/api/health", (req, res) => {

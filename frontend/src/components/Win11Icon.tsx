@@ -26,6 +26,10 @@ export const Win11Icon: React.FC<Win11IconProps> = ({
     width: size,
     height: size,
     flexShrink: 0,
+    // Icons are decorative: keep them out of the pointer-events path so hover
+    // and click highlight always target the parent item wrapper uniformly.
+    pointerEvents: 'none',
+    userSelect: 'none',
   };
 
   const cls = `drop-shadow-md transition-transform ${className}`;

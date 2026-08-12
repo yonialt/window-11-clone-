@@ -30,6 +30,9 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
   size = 'medium',
 }) => {
   const [contextMenuPos, setContextMenuPos] = useState<{ x: number; y: number } | null>(null);
+  // Hover is tracked on the whole desktop item so the highlight applies to the
+  // single parent wrapper — never to individual icon sub-elements.
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -60,6 +63,8 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
         id={isAddFolderShortcut ? 'desktop-add-folder-icon' : `desktop-icon-${folder?.id}`}
         onClick={isAddFolderShortcut ? onAddFolderClick : handleClick}
         onContextMenu={handleContextMenu}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className="relative flex flex-col items-center justify-start cursor-pointer select-none"
         style={{ width: wrapperWidth, paddingTop: 6, paddingBottom: 4 }}
         whileHover={{ scale: 1.06 }}
@@ -73,13 +78,21 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
             width: containerSize,
             height: containerSize,
             borderRadius: 6,
-            background: isSelected ? 'rgba(0, 120, 212, 0.25)' : 'transparent',
+            background: isSelected
+              ? 'rgba(0, 120, 212, 0.25)'
+              : isHovered
+                ? 'rgba(255, 255, 255, 0.10)'
+                : 'transparent',
             boxShadow: isSelected
               ? '0 0 0 1px rgba(0,120,212,0.6), 0 4px 16px rgba(0,120,212,0.3)'
               : undefined,
           }}
           animate={{
-            background: isSelected ? 'rgba(0, 120, 212, 0.25)' : 'rgba(0,0,0,0)',
+            background: isSelected
+              ? 'rgba(0, 120, 212, 0.25)'
+              : isHovered
+                ? 'rgba(255, 255, 255, 0.10)'
+                : 'rgba(0,0,0,0)',
           }}
           transition={{ duration: 0.12 }}
         >
@@ -100,7 +113,12 @@ export const DesktopIcon: React.FC<DesktopIconProps> = ({
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             textShadow: '0 1px 4px rgba(0,0,0,0.95), 0 0 8px rgba(0,0,0,0.8)',
-            background: isSelected ? 'rgba(0,78,152,0.85)' : 'transparent',
+            background: isSelected
+              ? 'rgba(0,78,152,0.85)'
+              : isHovered
+                ? 'rgba(255,255,255,0.12)'
+                : 'transparent',
+            transition: 'background 0.12s',
             padding: isSelected ? '0 3px 1px' : undefined,
             borderRadius: isSelected ? 2 : undefined,
           }}
