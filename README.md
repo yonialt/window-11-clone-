@@ -109,7 +109,7 @@ Serves the REST API at `http://localhost:8080/api/v1` (see [API](#-api) below).
 │   ├── api/auth/admin.ts         # Vercel serverless auth function (production)
 │   ├── server.ts                 # Express dev/prod server + REST API + auth
 │   └── vercel.json               # Vercel SPA rewrites + build config
-└── backend-springboot/           # Spring Boot REST API (Java 17)
+└── backend-springboot/           # Spring Boot REST API (Java 17) — see backend-springboot/README.md
     └── src/main/java/com/yonathan/portfolio/
         ├── PortfolioApplication.java
         └── controller/PortfolioController.java
