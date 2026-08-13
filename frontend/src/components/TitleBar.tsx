@@ -64,6 +64,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
       <div className="flex items-center shrink-0 -mr-3" style={{ height: 36 }}>
         <button
           onClick={(e) => { e.stopPropagation(); onMinimize(); }}
+          onDoubleClick={(e) => e.stopPropagation()}
           title="Minimize"
           className={`flex items-center justify-center w-11 h-full transition-colors duration-100 ${btnBase}`}
         >
@@ -71,6 +72,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onMaximize(); }}
+          onDoubleClick={(e) => e.stopPropagation()}
           title={isMaximized ? 'Restore Down' : 'Maximize'}
           className={`flex items-center justify-center w-11 h-full transition-colors duration-100 ${btnBase}`}
         >
@@ -78,6 +80,7 @@ export const TitleBar: React.FC<TitleBarProps> = ({
         </button>
         <button
           onClick={(e) => { e.stopPropagation(); onClose(); }}
+          onDoubleClick={(e) => e.stopPropagation()}
           title="Close"
           className="win11-btn-close flex items-center justify-center w-11 h-full transition-colors duration-100 text-slate-300 hover:bg-[#C42B1C] hover:text-white"
         >

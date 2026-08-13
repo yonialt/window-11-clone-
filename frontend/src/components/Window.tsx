@@ -104,6 +104,13 @@ export const Window: React.FC<WindowProps> = ({
     if (e.button !== 0) return;
     onFocus();
 
+    // Window control buttons (min/max/close) must never start a drag or
+    // restore the window from maximized/snapped state. Without this guard,
+    // pressing Close on a maximized window restores it down first — moving the
+    // title bar out from under the cursor so the click never reaches the
+    // button — and the window ends up merely restored instead of closed.
+    if ((e.target as HTMLElement).closest('button')) return;
+
     // Dragging a maximized / snapped window first restores it
     if (win.isMaximized) {
       const rb = win.restoreBounds ?? { position: win.position, size: win.size };
