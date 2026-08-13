@@ -171,6 +171,32 @@ export const INITIAL_PROJECTS: Project[] = [
     createdAt: '2026-08-12T10:00:00.000Z',
     updatedAt: '2026-08-12T10:00:00.000Z',
   },
+  {
+    id: 'proj-devops-pipeline',
+    title: 'Automated Microservices Deployment & CI/CD Pipeline',
+    tagline: 'Production-ready automated delivery pipeline utilizing Docker multi-stage builds, GitHub Actions workflows, and Nginx reverse proxying.',
+    description: [
+      'A complete, containerized full-stack application demonstrating the entire DevOps toolchain end-to-end: multi-stage Docker builds, a health-checked multi-service stack (Nginx → Express API → PostgreSQL), an automated GitHub Actions CI/CD pipeline that publishes multi-architecture images to GHCR, and a zero-downtime remote deployment script.',
+      '',
+      '▸ Key Features',
+      '  • Automated lint + unit-test enforcement on every pull request (CI gate)',
+      '  • Multi-arch (amd64/arm64) container images published to GHCR with SHA + latest tags',
+      '  • Zero-downtime deployment script with health-checked, rolling container recreation',
+      '  • Persistent PostgreSQL storage with automated health checks & boot ordering',
+      '',
+      '▸ Architecture Flow',
+      '  Developer Push → GitHub Actions (CI: lint → test → build → Docker)',
+      '  → GHCR Registry (multi-arch images) → SSH Deploy (docker compose up -d --build)',
+    ].join('\n'),
+    folderId: 'folder-devops',
+    tags: ['Docker', 'Docker Compose', 'GitHub Actions', 'CI/CD', 'Nginx', 'PostgreSQL', 'AWS'],
+    techStack: ['Docker', 'Docker Compose', 'GitHub Actions', 'CI/CD', 'Nginx', 'PostgreSQL', 'AWS'],
+    githubUrl: 'https://github.com/yonialt/window-11-clone-/tree/main/devops-pipeline',
+    imageUrl: 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=800&q=80',
+    featured: false,
+    createdAt: '2026-08-13T10:00:00.000Z',
+    updatedAt: '2026-08-13T10:00:00.000Z',
+  },
 ];
 
 export const WALLPAPERS: Wallpaper[] = [

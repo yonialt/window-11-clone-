@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment & secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Logs & OS
+*.log
+.DS_Store
+
+# Test coverage
+coverage/
