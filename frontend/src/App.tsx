@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Folder as FolderType,
@@ -269,23 +269,20 @@ export default function App() {
   }, [profile]);
 
   // ── Cloud sync (shared data across all devices) ──
-  // On startup, prefer the cloud state served by /api/data (Neon Postgres).
-  // If the cloud is empty (first run), keep this device's local data — the
-  // next admin write seeds the cloud with it, making it visible everywhere.
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/data');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (cancelled) return;
+  // On startup (and whenever the tab regains focus), prefer the cloud state
+  // served by /api/data + /api/settings (Neon Postgres). If the cloud is empty
+  // (first run), keep this device's local data — the next admin write seeds
+  // the cloud with it, making it visible everywhere.
+  const loadCloudData = useCallback(async (opts?: { skipSettings?: boolean }) => {
+    try {
+      const [dataRes, settingsRes] = await Promise.all([
+        fetch('/api/data', { cache: 'no-store' }),
+        opts?.skipSettings ? Promise.resolve(null) : fetch('/api/settings', { cache: 'no-store' }),
+      ]);
+      if (dataRes.ok) {
+        const data = await dataRes.json();
         const cloudFolders = Array.isArray(data?.folders) ? (data.folders as FolderType[]) : null;
         const cloudProjects = Array.isArray(data?.projects) ? (data.projects as Project[]) : null;
-        const hasCloud =
-          (cloudFolders !== null && cloudFolders.length > 0) ||
-          (cloudProjects !== null && cloudProjects.length > 0);
-        if (!hasCloud) return;
         if (cloudFolders && cloudFolders.length > 0) {
           setFolders(cloudFolders);
           localStorage.setItem(STORAGE_KEYS.FOLDERS, JSON.stringify(cloudFolders));
@@ -294,15 +291,50 @@ export default function App() {
           setProjects(cloudProjects);
           localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(cloudProjects));
         }
-      } catch (err) {
-        // Offline or API unavailable — fall back to this device's local data.
-        console.error('Cloud load failed — using local data.', err);
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+      if (settingsRes && settingsRes.ok) {
+        const settings = await settingsRes.json();
+        if (settings?.profile && typeof settings.profile === 'object' && settings.profile.name) {
+          setProfile(settings.profile as DeveloperProfile);
+          localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(settings.profile));
+        }
+        if (settings?.wallpaper && typeof settings.wallpaper === 'object' && settings.wallpaper.id) {
+          // Only apply wallpapers the app actually knows about.
+          const matched = WALLPAPERS.find((w) => w.id === settings.wallpaper.id);
+          if (matched) {
+            setCurrentWallpaper(matched);
+            localStorage.setItem(STORAGE_KEYS.WALLPAPER, JSON.stringify(matched));
+          }
+        }
+      }
+    } catch (err) {
+      // Offline or API unavailable — fall back to this device's local data.
+      console.error('Cloud load failed — using local data.', err);
+    }
   }, []);
+
+  // Load the cloud state on mount, and again whenever the tab becomes visible
+  // so edits made on another device show up in an already-open tab.
+  useEffect(() => {
+    loadCloudData();
+  }, [loadCloudData]);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      // Skip the profile/wallpaper reload while the Settings window is open so
+      // in-progress edits are never clobbered by an older cloud copy; folders
+      // & projects still refresh so edits made elsewhere show up promptly.
+      const settingsOpen = windows.some((w) => w.type === 'settings');
+      loadCloudData({ skipSettings: settingsOpen });
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
+  }, [loadCloudData, windows]);
 
   // Persist the full folders/projects state to the cloud after an admin write.
   // Uses the one-shot credentials captured at UAC confirmation and drops them
@@ -316,6 +348,7 @@ export default function App() {
       const res = await fetch('/api/data', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
         body: JSON.stringify({
           username: creds.username,
           password: creds.password,
@@ -668,6 +701,85 @@ export default function App() {
     setUacRequest(null);
     setUacError(null);
     setUacVerifying(false);
+  };
+
+  // ── Settings cloud sync (wallpaper + profile) ──
+  // Wallpaper/profile edits are saved to every device through PUT /api/settings.
+  // The admin password is required once per page session: the first settings
+  // change prompts the UAC gate, after which all further changes in this
+  // session sync silently. Writes are debounced so typing in the profile form
+  // doesn't fire a network request per keystroke.
+  const settingsCredsRef = useRef<{ username: string; password: string } | null>(null);
+  const settingsSyncTimerRef = useRef<number | null>(null);
+
+  useEffect(
+    () => () => {
+      if (settingsSyncTimerRef.current !== null) {
+        window.clearTimeout(settingsSyncTimerRef.current);
+      }
+    },
+    []
+  );
+
+  const pushSettingsToCloud = async (
+    creds: { username: string; password: string },
+    nextProfile: DeveloperProfile,
+    nextWallpaper: Wallpaper
+  ) => {
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+        body: JSON.stringify({
+          username: creds.username,
+          password: creds.password,
+          profile: nextProfile,
+          wallpaper: nextWallpaper,
+        }),
+      });
+      if (!res.ok) {
+        console.warn(`Settings sync failed (${res.status}) — kept on this device.`);
+      }
+    } catch (err) {
+      console.warn('Settings sync failed — kept on this device.', err);
+    }
+  };
+
+  const queueSettingsSync = (nextProfile: DeveloperProfile, nextWallpaper: Wallpaper) => {
+    if (settingsSyncTimerRef.current !== null) {
+      window.clearTimeout(settingsSyncTimerRef.current);
+    }
+    settingsSyncTimerRef.current = window.setTimeout(() => {
+      settingsSyncTimerRef.current = null;
+      if (!settingsCredsRef.current) {
+        // First settings write this session — ask for the admin password once,
+        // then sync; the confirmed credentials are cached for the session.
+        requireAdmin(
+          'Sync Settings',
+          'Portfolio OS wants to save your personalization settings to all your devices.',
+          () => {
+            settingsCredsRef.current = adminCredsRef.current;
+            adminCredsRef.current = null;
+            if (settingsCredsRef.current) {
+              pushSettingsToCloud(settingsCredsRef.current, nextProfile, nextWallpaper);
+            }
+          }
+        );
+      } else {
+        pushSettingsToCloud(settingsCredsRef.current, nextProfile, nextWallpaper);
+      }
+    }, 600);
+  };
+
+  const handleSelectWallpaper = (wp: Wallpaper) => {
+    setCurrentWallpaper(wp);
+    queueSettingsSync(profile, wp);
+  };
+
+  const handleUpdateProfile = (nextProfile: DeveloperProfile) => {
+    setProfile(nextProfile);
+    queueSettingsSync(nextProfile, currentWallpaper);
   };
 
   // ── Folder / Project CRUD ──
@@ -1084,9 +1196,9 @@ export default function App() {
                   <SettingsApp
                     wallpapers={WALLPAPERS}
                     currentWallpaper={currentWallpaper}
-                    onSelectWallpaper={setCurrentWallpaper}
+                    onSelectWallpaper={handleSelectWallpaper}
                     profile={profile}
-                    onUpdateProfile={setProfile}
+                    onUpdateProfile={handleUpdateProfile}
                     onOpenApp={launchApp}
                   />
                 )}

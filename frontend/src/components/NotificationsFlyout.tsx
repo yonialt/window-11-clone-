@@ -20,7 +20,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
   {
     id: 'notif-2',
     title: 'New GitHub star',
-    message: 'Someone starred the Food Delivery Management System ⭐',
+    message: 'Someone starred the AeroForm Furniture project ⭐',
     time: '12 minutes ago',
     read: false,
   },

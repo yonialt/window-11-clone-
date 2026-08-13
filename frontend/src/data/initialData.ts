@@ -2,6 +2,8 @@ import { Folder, Project, Wallpaper, DeveloperProfile } from '../types';
 import win11Wallpaper from '../assets/icons/win11wallpaper.jpg';
 import yo from '../assets/icons/yo.jpg';
 import srmsDashboard from '../assets/projects/srms-dashboard.png';
+import funImage from '../assets/projects/fun.png';
+import jojoImage from '../assets/projects/jojo.png';
 import ccnaCertificate from '../assets/projects/ccna-certificate.jpg';
 import awsCertificate from '../assets/projects/aws-certificate.jpg';
 
@@ -76,19 +78,6 @@ export const INITIAL_FOLDERS: Folder[] = [
 ];
 
 export const INITIAL_PROJECTS: Project[] = [
-  {
-    id: 'proj-food-delivery',
-    title: 'Food Delivery Management System',
-    tagline: 'Full-stack food ordering backend with auth, restaurants & order processing',
-    description: 'Backend system with authentication, restaurant management, and order processing, built with Spring Boot and PostgreSQL using a layered architecture. Includes secure JWT-based auth, menu & order workflows, and role-based access for customers, restaurants, and admins.',
-    folderId: 'folder-software-dev',
-    tags: ['Spring Boot', 'REST API', 'Authentication', 'PostgreSQL'],
-    techStack: ['Java 17', 'Spring Boot', 'Spring Security', 'JWT', 'PostgreSQL', 'Layered Architecture'],
-    imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80',
-    featured: true,
-    createdAt: '2025-09-10T10:00:00.000Z',
-    updatedAt: '2026-01-15T14:00:00.000Z',
-  },
   {
     id: 'proj-final-year-srms',
     title: 'AI-Integrated Smart Resource Management System (SRMS)',
@@ -194,6 +183,54 @@ export const INITIAL_PROJECTS: Project[] = [
     githubUrl: 'https://github.com/yonialt/window-11-clone-/tree/main/devops-pipeline',
     imageUrl: 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?auto=format&fit=crop&w=800&q=80',
     featured: false,
+    createdAt: '2026-08-13T10:00:00.000Z',
+    updatedAt: '2026-08-13T10:00:00.000Z',
+  },
+  {
+    id: 'proj-aeroform',
+    title: 'AeroForm Furniture',
+    tagline: 'Interactive Next.js furniture e-commerce platform featuring dynamic scroll-driven 3D product visualizers and custom canvas controls.',
+    description: [
+      'Built an immersive 3D product showcase and web storefront using Next.js and Three.js/React Three Fiber.',
+      '',
+      '▸ Interactive 3D Product Visualizer',
+      '  • Embedded dynamic 3D furniture models allowing users to rotate, inspect, and customize materials and colors in real-time.',
+      '▸ Scroll-Driven Animations',
+      '  • Integrated smooth 3D scroll triggers and perspective shifts as users navigate down product pages to highlight design details.',
+      '▸ Next.js Performance & SSR',
+      '  • Utilized Server-Side Rendering (SSR) and dynamic canvas imports to ensure fast initial page loads and high frame-rate performance.',
+      '▸ Cart & E-Commerce Workflow',
+      '  • Implemented dynamic product configuration state, cart management, and seamless checkout flows.',
+    ].join('\n'),
+    folderId: 'folder-software-dev',
+    tags: ['Next.js', 'Node.js', 'Express', 'AI', 'RBAC'],
+    techStack: ['Next.js', 'Node.js', 'Express', 'AI', 'RBAC'],
+    imageUrl: funImage,
+    featured: true,
+    createdAt: '2026-08-13T10:00:00.000Z',
+    updatedAt: '2026-08-13T10:00:00.000Z',
+  },
+  {
+    id: 'proj-jojo-ethiopia',
+    title: 'JOJO Ethiopia',
+    tagline: 'Full-stack juice store web application featuring product catalog management, order processing, dynamic menus, and secure role-based authentication.',
+    description: [
+      'Developed a full-stack web platform for JoJo Juice with end-to-end ordering, inventory management, and secure access controls.',
+      '',
+      '▸ Core Ordering & Juice Menu',
+      '  • Built an interactive storefront displaying customizable juice products, real-time cart handling, and order processing workflows.',
+      '▸ Spring Boot Backend & Database',
+      '  • Designed a layered backend architecture using Spring Boot and PostgreSQL, managing data models for juice items, orders, and customer accounts.',
+      '▸ Security & Authentication',
+      '  • Implemented JWT-based authentication with Spring Security to enforce Role-Based Access Control (RBAC) across customers, store managers, and system administrators.',
+      '▸ Administrative Dashboard',
+      '  • Built management features allowing administrators to add new juice items, update prices, manage inventory levels, and track order statuses.',
+    ].join('\n'),
+    folderId: 'folder-software-dev',
+    tags: ['Next.js', 'Spring Boot', 'REST API', 'Authentication', 'PostgreSQL'],
+    techStack: ['Java 17', 'Spring Boot', 'Spring Security', 'JWT', 'PostgreSQL', 'Layered Architecture'],
+    imageUrl: jojoImage,
+    featured: true,
     createdAt: '2026-08-13T10:00:00.000Z',
     updatedAt: '2026-08-13T10:00:00.000Z',
   },

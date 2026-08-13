@@ -69,7 +69,7 @@ Open **http://localhost:24678** (override with the `PORT` env var).
 |--------|---------|
 | `npm run dev` | Dev server with Vite HMR (Express middleware mode) |
 | `npm run build` | `vite build` + bundles `server.ts` → `dist/server.cjs` |
-| `npm start` | Serve the production build (`node dist/server.cjs`) |
+| `npm start` | Serve the production build from `dist/` (`NODE_ENV=production`, cache-busting headers on) |
 | `npm run lint` | Type-check the whole project (`tsc --noEmit`) |
 
 ### 2. Configure environment variables
@@ -107,6 +107,8 @@ Serves the REST API at `http://localhost:8080/api/v1` (see [API](#-api) below).
 │   │   ├── types.ts              # Shared TypeScript types
 │   │   └── index.css             # Tailwind + global styles
 │   ├── api/auth/admin.ts         # Vercel serverless auth function (production)
+│   ├── api/data.ts               # Vercel serverless cloud sync for folders & projects
+│   ├── api/settings.ts           # Vercel serverless cloud sync for profile & wallpaper
 │   ├── server.ts                 # Express dev/prod server + REST API + auth
 │   └── vercel.json               # Vercel SPA rewrites + build config
 └── backend-springboot/           # Spring Boot REST API (Java 17) — see backend-springboot/README.md
@@ -161,6 +163,8 @@ Serves the REST API at `http://localhost:8080/api/v1` (see [API](#-api) below).
 | `GET` / `PUT` | `/api/profile` | Read / update profile data |
 | `GET` / `POST` | `/api/folders` | List / create folders |
 | `GET` / `POST` | `/api/projects` | List / create projects |
+| `GET` / `PUT` | `/api/data` | Read / replace folders & projects (admin-gated PUT) — powers cross-device sync |
+| `GET` / `PUT` | `/api/settings` | Read / replace profile & wallpaper (admin-gated PUT) — powers cross-device settings sync |
 | `POST` | `/api/auth/admin` | Validate admin credentials → session token |
 | `POST` | `/api/auth/validate` | Validate a session token |
 
@@ -184,6 +188,8 @@ The project deploys to **Vercel** on every push to `main` (auto-deploy connected
 - `vercel.json` builds with `vite build` and rewrites all routes → `index.html` (SPA)
 - The UAC gate's auth endpoint runs as a **serverless function** (`frontend/api/auth/admin.ts`), so admin login works on the static deployment
 - **Set `ADMIN_USERNAME` / `ADMIN_PASSWORD` in Vercel → Settings → Environment Variables** to override the dev defaults in production
+- **Set `DATABASE_URL`** (Neon Postgres) in Vercel → Settings → Environment Variables for **Production and Preview** — this is what makes folders, projects, profile & wallpaper edits appear on every device. Without it, edits stay only in the browser that made them.
+- **Cache-busting:** `vercel.json` serves `index.html` (and every SPA route) with `Cache-Control: no-cache, no-store, must-revalidate` and the content-hashed files under `/assets/` as `public, max-age=31536000, immutable` — so browsers always fetch the latest app shell and never serve stale static files.
 
 ### Deploy locally
 ```bash
@@ -191,7 +197,7 @@ cd frontend
 npm run build && npm start     # serves the production build on :24678
 ```
 
-> **Note:** folders/projects you create are persisted to that browser's `localStorage` — per-browser, not server-shared.
+> **Note:** with `DATABASE_URL` set, folders, projects, profile & wallpaper are cloud-synced via the `/api/data` and `/api/settings` serverless functions (Neon Postgres). `localStorage` is only used as an offline fallback; the app re-syncs from the cloud on load and whenever the tab regains focus. Folder/project edits sync on each admin write; wallpaper/profile edits sync after entering the admin password once per session.
 
 ---
 

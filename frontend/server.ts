@@ -21,140 +21,55 @@ let profileData = {
   location: "Addis Ababa, Ethiopia",
 };
 
-let foldersData = [
-  {
-    id: "folder-about-me",
-    name: "About Me",
-    description: "Personal bio, contact links, and engineering profile",
-    icon: "user",
-    color: "blue",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "folder-food-delivery",
-    name: "Food Delivery Management System",
-    description: "Full-stack food ordering backend with auth, restaurants & order processing",
-    icon: "code",
-    color: "blue",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "folder-ai-resource",
-    name: "AI Smart Resource Management System",
-    description: "AI-driven resource allocation with role-based access control",
-    icon: "sparkles",
-    color: "purple",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "folder-self-tracker",
-    name: "Self Tracker Analytics System",
-    description: "Personal analytics & ML insights from Google Takeout data",
-    icon: "briefcase",
-    color: "emerald",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "folder-socket-server",
-    name: "Socket Programming Web Server",
-    description: "HTTP web server built from scratch with raw C++ sockets",
-    icon: "terminal",
-    color: "cyan",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "folder-other-projects",
-    name: "Other Projects",
-    description: "Additional experiments, concepts, and works in progress",
-    icon: "layer",
-    color: "amber",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "folder-skills",
-    name: "Skills",
-    description: "Technical stack, programming languages, and tools",
-    icon: "code",
-    color: "emerald",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "folder-resume",
-    name: "Resume",
-    description: "Career resume PDF download and work experience history",
-    icon: "file-text",
-    color: "purple",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: "folder-contact",
-    name: "Contact",
-    description: "Direct email message form and social channels",
-    icon: "mail",
-    color: "rose",
-    parentId: null,
-    createdAt: new Date().toISOString(),
-  },
-];
+// Cloud-synced folders & projects. Mirrors the Vercel serverless function in
+// frontend/api/data.ts so local development behaves like production. Starts
+// empty (matching the empty Neon database) so the app seeds itself from
+// src/data/initialData.ts — otherwise dev seed data would clobber the real
+// portfolio state on every load. The first admin write (PUT /api/data) seeds
+// this from the frontend's current state.
+let foldersData = [];
+let projectsData = [];
 
-let projectsData = [
-  {
-    id: "proj-food-delivery",
-    title: "Food Delivery Management System",
-    tagline: "Full-stack food ordering backend with auth, restaurants & order processing",
-    description: "Backend system with authentication, restaurant management, and order processing, built with Spring Boot and PostgreSQL using a layered architecture.",
-    techStack: ["Java 17", "Spring Boot", "Spring Security", "JWT", "PostgreSQL"],
-    imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop&q=80",
-    folderId: "folder-food-delivery",
-    featured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "proj-ai-resource",
-    title: "AI Smart Resource Management System",
-    tagline: "AI-driven resource allocation with role-based access control",
-    description: "Resource allocation system for university operations with role-based access control and AI-driven decision-making logic.",
-    techStack: ["Node.js", "Express.js", "MongoDB", "Role-Based Access Control", "AI Decision Logic"],
-    imageUrl: "https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&auto=format&fit=crop&q=80",
-    folderId: "folder-ai-resource",
-    featured: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "proj-self-tracker",
-    title: "Self Tracker Analytics System",
-    tagline: "Personal analytics & ML insights from Google Takeout data",
-    description: "Personal analytics platform using Google Takeout data; applied data cleaning, visualization, and machine learning with Pandas, NumPy, and Scikit-learn.",
-    techStack: ["Python", "Pandas", "NumPy", "Scikit-learn", "Matplotlib"],
-    imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80",
-    folderId: "folder-self-tracker",
-    featured: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-  {
-    id: "proj-socket-server",
-    title: "Socket Programming Web Server",
-    tagline: "HTTP web server built from scratch with raw C++ sockets",
-    description: "HTTP web server built with raw socket programming, implementing request/response handling from the ground up.",
-    techStack: ["C++", "POSIX Sockets", "TCP/IP", "HTTP/1.1"],
-    imageUrl: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&auto=format&fit=crop&q=80",
-    folderId: "folder-socket-server",
-    featured: false,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  },
-];
+// ── Cloud-synced settings (profile + wallpaper) ──
+// Mirrors the Vercel serverless function in frontend/api/settings.ts so local
+// development behaves like production. settingsSaved starts false so GET only
+// returns profile data after the user actually saved it — matching the empty
+// production database state (otherwise dev defaults would clobber a user's
+// customized local profile on every reload).
+let wallpaperData: {
+  id: string;
+  name: string;
+  type: string;
+  value: string;
+  thumbnail: string;
+} | null = null;
+let settingsSaved = false;
+
+app.get("/api/settings", (req, res) => {
+  res.json({
+    profile: settingsSaved ? profileData : null,
+    wallpaper: wallpaperData,
+  });
+});
+
+app.put("/api/settings", (req, res) => {
+  const { username, password, profile, wallpaper } = req.body ?? {};
+  const userOk =
+    typeof username === "string" &&
+    username.trim().toLowerCase() === ADMIN_USERNAME.trim().toLowerCase();
+  const passOk = typeof password === "string" && password === ADMIN_PASSWORD;
+  if (!userOk || !passOk) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (profile && typeof profile === "object") {
+    profileData = { ...profileData, ...profile };
+    settingsSaved = true;
+  }
+  if (wallpaper && typeof wallpaper === "object" && typeof wallpaper.id === "string") {
+    wallpaperData = wallpaper as typeof wallpaperData;
+  }
+  res.json({ ok: true });
+});
 
 // ── Admin authentication (UAC gate) ──
 // Write operations in the UI (add/edit/delete) prompt for an administrator
@@ -281,8 +196,25 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
+    // Cache-busting: index.html (and any un-hashed file) must never be cached so
+    // browsers always fetch the latest app shell; Vite emits content-hashed
+    // filenames under dist/assets, which are safe to cache forever.
+    const noStore = "no-cache, no-store, must-revalidate";
+    app.use(
+      express.static(distPath, {
+        setHeaders: (res, filePath) => {
+          if (filePath.endsWith(".html")) {
+            res.setHeader("Cache-Control", noStore);
+          } else if (filePath.includes(`${path.sep}assets${path.sep}`)) {
+            res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+          } else {
+            res.setHeader("Cache-Control", noStore);
+          }
+        },
+      })
+    );
     app.get("*", (req, res) => {
+      res.setHeader("Cache-Control", noStore);
       res.sendFile(path.join(distPath, "index.html"));
     });
   }

@@ -124,11 +124,11 @@ Returns an array of project objects:
 ```json
 [
   {
-    "id": "proj-food-delivery",
-    "title": "Food Delivery Management System",
-    "tagline": "Full-stack food ordering backend with auth, restaurants & order processing",
-    "description": "Backend system with authentication, restaurant management, and order processing...",
-    "techStack": ["Java 17", "Spring Boot", "Spring Security", "JWT", "PostgreSQL"]
+    "id": "proj-ai-resource",
+    "title": "AI Smart Resource Management System",
+    "tagline": "AI-driven resource allocation with role-based access control",
+    "description": "Resource allocation system for university operations with role-based access control and AI-driven decision-making logic...",
+    "techStack": ["Node.js", "Express.js", "MongoDB", "RBAC", "AI Decision Logic"]
   }
 ]
 ```
@@ -137,7 +137,6 @@ Currently served projects:
 
 | Project | Tech Stack |
 |---------|-----------|
-| Food Delivery Management System | Java 17 · Spring Boot · Spring Security · JWT · PostgreSQL |
 | AI Smart Resource Management System | Node.js · Express.js · MongoDB · RBAC · AI Decision Logic |
 | Self Tracker Analytics System | Python · Pandas · NumPy · Scikit-learn · Matplotlib |
 | Socket Programming Web Server | C++ · POSIX Sockets · TCP/IP · HTTP/1.1 |

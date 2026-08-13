@@ -17,10 +17,5 @@ INSERT INTO projects (title, tagline, tech_stack) VALUES
         'Automated Microservices Deployment & CI/CD Pipeline',
         'Production-ready automated delivery pipeline utilizing Docker multi-stage builds, GitHub Actions workflows, and Nginx reverse proxying.',
         ARRAY['Docker', 'Docker Compose', 'GitHub Actions', 'CI/CD', 'Nginx', 'PostgreSQL', 'AWS']
-    ),
-    (
-        'Food Delivery Management System',
-        'Full-stack food ordering backend with auth, restaurants & order processing.',
-        ARRAY['Java 17', 'Spring Boot', 'JWT', 'PostgreSQL']
     )
 ON CONFLICT DO NOTHING;
