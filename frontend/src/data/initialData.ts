@@ -4,6 +4,7 @@ import yo from '../assets/icons/yo.jpg';
 import srmsDashboard from '../assets/projects/srms-dashboard.png';
 import funImage from '../assets/projects/fun.png';
 import jojoImage from '../assets/projects/jojo.png';
+import bettImage from '../assets/projects/bett.png';
 import ccnaCertificate from '../assets/projects/ccna-certificate.jpg';
 import awsCertificate from '../assets/projects/aws-certificate.jpg';
 
@@ -230,6 +231,32 @@ export const INITIAL_PROJECTS: Project[] = [
     tags: ['Next.js', 'Spring Boot', 'REST API', 'Authentication', 'PostgreSQL'],
     techStack: ['Java 17', 'Spring Boot', 'Spring Security', 'JWT', 'PostgreSQL', 'Layered Architecture'],
     imageUrl: jojoImage,
+    featured: true,
+    createdAt: '2026-08-13T10:00:00.000Z',
+    updatedAt: '2026-08-13T10:00:00.000Z',
+  },
+  {
+    id: 'proj-apexbet',
+    title: 'ApexBet - Sportsbook & Live Betting Web Application',
+    tagline: 'Full-stack sports betting platform featuring live match tracking, real-time odds updates, dynamic parlay construction, and sleek dark mode UI.',
+    description: [
+      'ApexBet is a high-performance sports betting application designed for fast, seamless live-wagering and fixture navigation.',
+      '',
+      '▸ Real-Time Match Updates',
+      '  • Live scoreboard, elapsed time indicators, and dynamic market odds updates.',
+      '▸ Interactive Bet Slip Builder',
+      '  • Supports Single and Multi Parlay bet types with automatic total odds and payout calculations.',
+      '▸ Comprehensive Sports Hub',
+      '  • Categorized navigation across football, basketball, tennis, esports, and live in-play events.',
+      '▸ Flexible Odds Controls',
+      '  • Seamless switching across fractional, decimal, and custom odds formats.',
+      '▸ Modern UX/UI',
+      '  • High-contrast dark theme with quick stake selector buttons.',
+    ].join('\n'),
+    folderId: 'folder-software-dev',
+    tags: ['React', 'TypeScript', 'Tailwind'],
+    techStack: ['React 19', 'TypeScript', 'Tailwind CSS', 'Vite', 'Node.js'],
+    imageUrl: bettImage,
     featured: true,
     createdAt: '2026-08-13T10:00:00.000Z',
     updatedAt: '2026-08-13T10:00:00.000Z',
