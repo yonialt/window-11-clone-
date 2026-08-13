@@ -208,6 +208,9 @@ export default function App() {
   const [isMarqueeDragging, setIsMarqueeDragging] = useState(false);
   const marqueeDragRef = useRef<{ startX: number; startY: number } | null>(null);
   const suppressClickRef = useRef(false);
+  // One-shot admin credentials captured at UAC confirmation — held only long
+  // enough to persist the single authorized write to the cloud, then dropped.
+  const adminCredsRef = useRef<{ username: string; password: string } | null>(null);
 
   // Folder Modal State
   const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
@@ -264,6 +267,69 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
   }, [profile]);
+
+  // ── Cloud sync (shared data across all devices) ──
+  // On startup, prefer the cloud state served by /api/data (Neon Postgres).
+  // If the cloud is empty (first run), keep this device's local data — the
+  // next admin write seeds the cloud with it, making it visible everywhere.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/data');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (cancelled) return;
+        const cloudFolders = Array.isArray(data?.folders) ? (data.folders as FolderType[]) : null;
+        const cloudProjects = Array.isArray(data?.projects) ? (data.projects as Project[]) : null;
+        const hasCloud =
+          (cloudFolders !== null && cloudFolders.length > 0) ||
+          (cloudProjects !== null && cloudProjects.length > 0);
+        if (!hasCloud) return;
+        if (cloudFolders && cloudFolders.length > 0) {
+          setFolders(cloudFolders);
+          localStorage.setItem(STORAGE_KEYS.FOLDERS, JSON.stringify(cloudFolders));
+        }
+        if (cloudProjects && cloudProjects.length > 0) {
+          setProjects(cloudProjects);
+          localStorage.setItem(STORAGE_KEYS.PROJECTS, JSON.stringify(cloudProjects));
+        }
+      } catch (err) {
+        // Offline or API unavailable — fall back to this device's local data.
+        console.error('Cloud load failed — using local data.', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Persist the full folders/projects state to the cloud after an admin write.
+  // Uses the one-shot credentials captured at UAC confirmation and drops them
+  // immediately, matching the app's no-session auth model. Never blocks the UI
+  // on sync failure — local state + localStorage keep the data safe.
+  const persistToCloud = async (nextFolders: FolderType[], nextProjects: Project[]) => {
+    const creds = adminCredsRef.current;
+    if (!creds) return;
+    adminCredsRef.current = null;
+    try {
+      const res = await fetch('/api/data', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: creds.username,
+          password: creds.password,
+          folders: nextFolders,
+          projects: nextProjects,
+        }),
+      });
+      if (!res.ok) {
+        console.warn(`Cloud save failed (${res.status}) — changes kept on this device.`);
+      }
+    } catch (err) {
+      console.warn('Cloud save failed — changes kept on this device.', err);
+    }
+  };
 
   // ── Window Manager helpers ──
   const toggleTaskView = () => {
@@ -586,6 +652,9 @@ export default function App() {
     const result = await authenticateAdmin(username, password);
     setUacVerifying(false);
     if (result.success) {
+      // Hold the credentials only long enough to persist the single write
+      // operation they authorized, then drop them (one-shot auth).
+      adminCredsRef.current = { username, password };
       // Perform the single requested action, then re-lock for the next one
       const action = uacRequest.action;
       setUacRequest(null);
@@ -626,7 +695,11 @@ export default function App() {
     parentId: string | null;
   }) => {
     if (folderToEdit) {
-      setFolders((prev) => prev.map((f) => (f.id === folderToEdit.id ? { ...f, ...folderData } : f)));
+      const nextFolders = folders.map((f) =>
+        f.id === folderToEdit.id ? { ...f, ...folderData } : f
+      );
+      setFolders(nextFolders);
+      persistToCloud(nextFolders, projects);
       setWindows((prev) =>
         prev.map((w) =>
           w.id === `folder-${folderToEdit.id}` ? { ...w, title: folderData.name } : w
@@ -642,7 +715,9 @@ export default function App() {
         parentId: folderData.parentId,
         createdAt: new Date().toISOString(),
       };
-      setFolders((prev) => [...prev, newFolder]);
+      const nextFolders = [...folders, newFolder];
+      setFolders(nextFolders);
+      persistToCloud(nextFolders, projects);
       openFolderWindow(newFolder.id);
     }
   };
@@ -674,8 +749,11 @@ export default function App() {
             .filter((p) => idsToDelete.has(p.folderId))
             .map((p) => p.id);
 
-          setFolders((prev) => prev.filter((f) => !idsToDelete.has(f.id)));
-          setProjects((prev) => prev.filter((p) => !idsToDelete.has(p.folderId)));
+          const nextFolders = folders.filter((f) => !idsToDelete.has(f.id));
+          const nextProjects = projects.filter((p) => !idsToDelete.has(p.folderId));
+          setFolders(nextFolders);
+          setProjects(nextProjects);
+          persistToCloud(nextFolders, nextProjects);
           // Close any open windows for the deleted folders & projects
           idsToDelete.forEach((id) => closeWindow(`folder-${id}`));
           removedProjectIds.forEach((id) => closeWindow(`project-${id}`));
@@ -702,13 +780,13 @@ export default function App() {
 
   const handleSaveProject = (projectData: Omit<Project, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (projectToEdit) {
-      setProjects((prev) =>
-        prev.map((p) =>
-          p.id === projectToEdit.id
-            ? { ...p, ...projectData, updatedAt: new Date().toISOString() }
-            : p
-        )
+      const nextProjects = projects.map((p) =>
+        p.id === projectToEdit.id
+          ? { ...p, ...projectData, updatedAt: new Date().toISOString() }
+          : p
       );
+      setProjects(nextProjects);
+      persistToCloud(folders, nextProjects);
       setWindows((prev) =>
         prev.map((w) =>
           w.id === `project-${projectToEdit.id}` ? { ...w, title: projectData.title } : w
@@ -721,7 +799,9 @@ export default function App() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      setProjects((prev) => [...prev, newProj]);
+      const nextProjects = [...projects, newProj];
+      setProjects(nextProjects);
+      persistToCloud(folders, nextProjects);
       openProjectWindow(newProj);
     }
   };
@@ -729,7 +809,9 @@ export default function App() {
   const handleDeleteProject = (projectId: string) => {
     requireAdmin('Delete Project', 'Portfolio OS wants to permanently delete this project.', () => {
       if (window.confirm('Delete this project?')) {
-        setProjects((prev) => prev.filter((p) => p.id !== projectId));
+        const nextProjects = projects.filter((p) => p.id !== projectId);
+        setProjects(nextProjects);
+        persistToCloud(folders, nextProjects);
         closeWindow(`project-${projectId}`);
       }
     });

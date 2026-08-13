@@ -239,6 +239,31 @@ app.post("/api/projects", (req, res) => {
   res.status(201).json(newProject);
 });
 
+// Cloud-sync endpoints — mirror the Vercel serverless function in
+// frontend/api/data.ts so local development behaves like production. Local
+// dev stores data in memory (restarting the server resets it); production
+// persists it to Neon Postgres via DATABASE_URL.
+app.get("/api/data", (req, res) => {
+  res.json({ folders: foldersData, projects: projectsData });
+});
+
+app.put("/api/data", (req, res) => {
+  const { username, password, folders, projects } = req.body ?? {};
+  const userOk =
+    typeof username === "string" &&
+    username.trim().toLowerCase() === ADMIN_USERNAME.trim().toLowerCase();
+  const passOk = typeof password === "string" && password === ADMIN_PASSWORD;
+  if (!userOk || !passOk) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  if (!Array.isArray(folders) || !Array.isArray(projects)) {
+    return res.status(400).json({ error: "folders and projects arrays are required" });
+  }
+  foldersData = folders;
+  projectsData = projects;
+  res.json({ ok: true });
+});
+
 // Vite Middleware Setup for Dev & Prod
 async function startServer() {
   // Create the HTTP server first so Vite's HMR WebSocket can bind to its
