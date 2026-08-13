@@ -5,6 +5,7 @@ import srmsDashboard from '../assets/projects/srms-dashboard.png';
 import funImage from '../assets/projects/fun.png';
 import jojoImage from '../assets/projects/jojo.png';
 import bettImage from '../assets/projects/bett.png';
+import tokImage from '../assets/projects/tok.png';
 import ccnaCertificate from '../assets/projects/ccna-certificate.jpg';
 import awsCertificate from '../assets/projects/aws-certificate.jpg';
 
@@ -257,6 +258,30 @@ export const INITIAL_PROJECTS: Project[] = [
     tags: ['React', 'TypeScript', 'Tailwind'],
     techStack: ['React 19', 'TypeScript', 'Tailwind CSS', 'Vite', 'Node.js'],
     imageUrl: bettImage,
+    featured: true,
+    createdAt: '2026-08-13T10:00:00.000Z',
+    updatedAt: '2026-08-13T10:00:00.000Z',
+  },
+  {
+    id: 'proj-contextpack',
+    title: 'ContextPack - AI Code Context & Token Manager',
+    tagline: 'A developer utility designed to manage repository context, estimate token counts, and bundle codebase files into optimized Markdown packs for LLMs.',
+    description: [
+      'ContextPack is an interactive developer tool designed to bridge the gap between large codebases and LLM context windows (ChatGPT, Claude, Gemini). It allows developers to browse repository trees, apply fine-grained file ignore patterns, and monitor estimated token budgets in real time.',
+      '',
+      '▸ Token Budget Tracking',
+      '  • Live estimation of raw file size and total token counts (~chars / 4) to stay within LLM context limits.',
+      '▸ Dynamic File Browser',
+      '  • Interactive IDE-like workspace to select, review, and exclude specific files or directories.',
+      '▸ Ignore Pattern Filtering',
+      '  • Support for custom ignore lists (e.g., node_modules, .git, build artifacts) to minimize prompt bloat.',
+      '▸ One-Click Pack Generation',
+      '  • Exports selected repository files into a clean, formatted .md file or copies directly to the clipboard for prompt injection.',
+    ].join('\n'),
+    folderId: 'folder-software-dev',
+    tags: ['React', 'TypeScript', 'Tailwind'],
+    techStack: ['React', 'TypeScript', 'Tailwind CSS', 'Next.js', 'Node.js'],
+    imageUrl: tokImage,
     featured: true,
     createdAt: '2026-08-13T10:00:00.000Z',
     updatedAt: '2026-08-13T10:00:00.000Z',
