@@ -275,17 +275,44 @@ export const FileExplorerApp: React.FC<FileExplorerAppProps> = ({
               <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">Folders</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-8">
                 {rootFolders.map((f) => (
-                  <button
+                  <div
                     key={f.id}
                     onClick={() => navigate(f.id)}
-                    className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-blue-50 transition-colors text-left group"
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(f.id);
+                      }
+                    }}
+                    className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer group"
                   >
                     <Win11Icon name={f.name} size={40} />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-[13px] text-gray-800 group-hover:text-blue-700 truncate font-medium">{f.name}</p>
                       <p className="text-[11px] text-gray-400">Folder</p>
                     </div>
-                  </button>
+                    <div
+                      className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => onEditFolder(f)}
+                        className="p-1.5 rounded hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition-colors"
+                        title="Rename"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => onDeleteFolder(f.id)}
+                        className="p-1.5 rounded hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
                 ))}
               </div>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">Portfolio apps</p>
@@ -330,17 +357,44 @@ export const FileExplorerApp: React.FC<FileExplorerAppProps> = ({
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-2">Folders</p>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                         {filteredSubfolders.map((f) => (
-                          <button
+                          <div
                             key={f.id}
                             onClick={() => navigate(f.id)}
-                            className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-blue-50 transition-colors text-left group"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                navigate(f.id);
+                              }
+                            }}
+                            className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer group"
                           >
                             <Win11Icon name={f.name} size={40} />
                             <div className="min-w-0 flex-1">
                               <p className="text-[13px] text-gray-800 group-hover:text-blue-700 truncate font-medium">{f.name}</p>
                               <p className="text-[11px] text-gray-400">Folder</p>
                             </div>
-                          </button>
+                            <div
+                              className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={() => onEditFolder(f)}
+                                className="p-1.5 rounded hover:bg-gray-200 text-gray-500 hover:text-gray-800 transition-colors"
+                                title="Rename"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => onDeleteFolder(f.id)}
+                                className="p-1.5 rounded hover:bg-red-50 text-gray-500 hover:text-red-500 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>

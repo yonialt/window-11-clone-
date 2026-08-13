@@ -651,11 +651,34 @@ export default function App() {
     const target = folders.find((f) => f.id === folderId);
     requireAdmin(
       'Delete Folder',
-      `Portfolio OS wants to permanently delete "${target?.name ?? 'this folder'}" and its project references.`,
+      `Portfolio OS wants to permanently delete "${target?.name ?? 'this folder'}" and everything inside it.`,
       () => {
-        if (window.confirm('Are you sure you want to delete this folder and its project references?')) {
-          setFolders((prev) => prev.filter((f) => f.id !== folderId));
-          closeWindow(`folder-${folderId}`);
+        if (
+          window.confirm(
+            'Delete this folder and everything inside it? Projects and subfolders will also be removed. This cannot be undone.'
+          )
+        ) {
+          // Cascade: collect this folder plus every descendant subfolder
+          const idsToDelete = new Set<string>([folderId]);
+          let grew = true;
+          while (grew) {
+            grew = false;
+            for (const f of folders) {
+              if (f.parentId && idsToDelete.has(f.parentId) && !idsToDelete.has(f.id)) {
+                idsToDelete.add(f.id);
+                grew = true;
+              }
+            }
+          }
+          const removedProjectIds = projects
+            .filter((p) => idsToDelete.has(p.folderId))
+            .map((p) => p.id);
+
+          setFolders((prev) => prev.filter((f) => !idsToDelete.has(f.id)));
+          setProjects((prev) => prev.filter((p) => !idsToDelete.has(p.folderId)));
+          // Close any open windows for the deleted folders & projects
+          idsToDelete.forEach((id) => closeWindow(`folder-${id}`));
+          removedProjectIds.forEach((id) => closeWindow(`project-${id}`));
         }
       }
     );
