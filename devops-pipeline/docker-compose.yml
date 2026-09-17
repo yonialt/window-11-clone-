@@ -1,0 +1,79 @@
+name: pipeline-demo
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Production-grade local stack for the CI/CD demonstration project.
+#  Boot ordering is guaranteed by health checks: frontend only starts after
+#  the backend is healthy, and the backend only after PostgreSQL is ready.
+#
+#  Usage:
+#    cp .env.example .env      # adjust credentials
+#    docker compose up -d --build
+#    open http://localhost
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-portfolio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-portfolio}
+      POSTGRES_DB: ${POSTGRES_DB:-portfolio}
+    volumes:
+      - pgdata:/var/lib/postgresql/data          # persistent storage
+      - ./backend/db/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
+    healthcheck:
+      # pg_isready validates the connection with the *container's* env vars
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    # Canonical image name — matches the tags CI publishes to GHCR, so the same
+    # compose file can `pull` prebuilt images or `--build` from source locally.
+    image: ${IMAGE_PREFIX:-ghcr.io/yonialt/window-11-clone-}/backend:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "5000"
+      # Service name "db" resolves via the compose network
+      DATABASE_URL: postgres://${POSTGRES_USER:-portfolio}:${POSTGRES_PASSWORD:-portfolio}@db:5432/${POSTGRES_DB:-portfolio}
+      # Build metadata injected by CI at build time (see deploy.yml)
+      COMMIT_SHA: ${COMMIT_SHA:-local}
+      BUILD_DATE: ${BUILD_DATE:-unknown}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/api/health >/dev/null 2>&1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    ports:
+      - "${BACKEND_PORT:-5000}:5000"
+
+  frontend:
+    image: ${IMAGE_PREFIX:-ghcr.io/yonialt/window-11-clone-}/frontend:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "${WEB_PORT:-80}:80"
+
+volumes:
+  pgdata:

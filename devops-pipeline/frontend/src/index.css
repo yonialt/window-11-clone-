@@ -1,0 +1,151 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: #0b1220;
+  color: #e2e8f0;
+}
+
+.page {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+}
+
+.hero {
+  margin-bottom: 32px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: #0f3b66;
+  color: #7dd3fc;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+h1 {
+  font-size: 30px;
+  line-height: 1.2;
+  margin: 12px 0 8px;
+}
+
+.hero p {
+  color: #94a3b8;
+  max-width: 640px;
+}
+
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.chip {
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: #16233a;
+  border: 1px solid #24344f;
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+.chip.small {
+  font-size: 11px;
+  padding: 3px 8px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.card {
+  position: relative;
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid #24344f;
+  background: #101a2e;
+}
+
+.card h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.card p {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.dot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.card.ok .dot {
+  background: #34d399;
+  box-shadow: 0 0 8px #34d39988;
+}
+
+.card.warn .dot {
+  background: #fbbf24;
+  box-shadow: 0 0 8px #fbbf2488;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list li {
+  padding: 16px;
+  border-radius: 12px;
+  background: #101a2e;
+  border: 1px solid #24344f;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.list span {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 13px;
+}
+
+footer {
+  margin-top: 40px;
+  text-align: center;
+}
