@@ -128,10 +128,12 @@ export default function App() {
         if (Array.isArray(parsed)) {
           const DELETED_PROJECT_IDS = new Set([
             'proj-self-tracker',
+            'proj-ai-resource',
           ]);
           const isDeleted = (p: Project) =>
             DELETED_PROJECT_IDS.has(p.id) ||
-            p.title.toLowerCase().includes('self tracker');
+            p.title.toLowerCase().includes('self tracker') ||
+            p.title.toLowerCase().includes('ai smart resource');
 
           const cleaned = parsed.filter((p: Project) => !isDeleted(p));
           let merged: Project[] = cleaned;
@@ -172,6 +174,18 @@ export default function App() {
                 : p;
             });
           }
+
+          // Always synchronize select seed-managed projects to their latest content
+          // (live URLs, images, descriptions) so returning visitors with older
+          // localStorage copies still see updates. Fresh seed data wins over saved data.
+          const syncedProjectIds = new Set(['proj-polymarket-predictions']);
+          merged = merged.map((p: Project) => {
+            if (syncedProjectIds.has(p.id)) {
+              const fresh = INITIAL_PROJECTS.find((f) => f.id === p.id);
+              if (fresh) return { ...p, ...fresh };
+            }
+            return p;
+          });
 
           // Always synchronize all DevOps folder projects to include fresh images, steps, and descriptions
           const devOpsProjectIds = [
