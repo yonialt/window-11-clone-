@@ -43,6 +43,17 @@ public class PortfolioController {
         proj1.put("techStack", List.of("Node.js", "Express.js", "MongoDB", "RBAC", "AI Decision Logic"));
         projects.add(proj1);
 
+<<<<<<< HEAD
+=======
+        Map<String, Object> proj2 = new HashMap<>();
+        proj2.put("id", "proj-self-tracker");
+        proj2.put("title", "Self Tracker Analytics System");
+        proj2.put("tagline", "Personal analytics & ML insights from Google Takeout data");
+        proj2.put("description", "Personal analytics platform using Google Takeout data; applied data cleaning, visualization, and machine learning with Pandas, NumPy, and Scikit-learn.");
+        proj2.put("techStack", List.of("Python", "Pandas", "NumPy", "Scikit-learn", "Matplotlib"));
+        projects.add(proj2);
+
+>>>>>>> dd950690596c6f1a2f0e45d4734d4567babe5204
         Map<String, Object> proj3 = new HashMap<>();
         proj3.put("id", "proj-socket-server");
         proj3.put("title", "Socket Programming Web Server");
@@ -51,6 +62,7 @@ public class PortfolioController {
         proj3.put("techStack", List.of("C++", "POSIX Sockets", "TCP/IP", "HTTP/1.1"));
         projects.add(proj3);
 
+<<<<<<< HEAD
         Map<String, Object> proj4 = new HashMap<>();
         proj4.put("id", "proj-devops-pipeline");
         proj4.put("title", "AWS Production CI/CD Pipeline & Cloud Deployment (FidaBet)");
@@ -108,6 +120,8 @@ public class PortfolioController {
         proj11.put("techStack", List.of("AWS EC2", "Instance: hagerawi", "Type: t3.micro", "Zone: us-east-1c", "3/3 Checks Passed", "Docker Compose"));
         projects.add(proj11);
 
+=======
+>>>>>>> dd950690596c6f1a2f0e45d4734d4567babe5204
         return projects;
     }
 }

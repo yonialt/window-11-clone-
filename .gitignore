@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+server.js
+
+# Environment files (keep .env.example templates only)
+.env
+.env.local
+.env.*.local
+
+# Vercel
+.vercel
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -138,6 +138,10 @@ Currently served projects:
 | Project | Tech Stack |
 |---------|-----------|
 | AI Smart Resource Management System | Node.js · Express.js · MongoDB · RBAC · AI Decision Logic |
+<<<<<<< HEAD
+=======
+| Self Tracker Analytics System | Python · Pandas · NumPy · Scikit-learn · Matplotlib |
+>>>>>>> dd950690596c6f1a2f0e45d4734d4567babe5204
 | Socket Programming Web Server | C++ · POSIX Sockets · TCP/IP · HTTP/1.1 |
 
 ---
