@@ -18,6 +18,7 @@ import githubActionsSteps from '../assets/projects/github-actions-steps.jpg';
 import awsEc2Server from '../assets/projects/aws-ec2-server.jpg';
 import campasImage from '../assets/projects/campas.png';
 import avtiveDirectoryImage from '../assets/projects/avtive directory.png';
+import softwaredevpolyImage from '../assets/projects/softwaredevpoly.png';
 
 export const PROFILE_LINKS = {
   github: 'https://github.com/yonialt',
@@ -931,6 +932,35 @@ export const INITIAL_PROJECTS: Project[] = [
     featured: true,
     createdAt: '2026-08-13T10:00:00.000Z',
     updatedAt: '2026-08-13T10:00:00.000Z',
+  },
+  {
+    id: 'proj-polymarket-predictions',
+    title: 'Polymarket-Style Prediction Markets Platform (FidaBet)',
+    tagline: 'Full-stack prediction market and sportsbook platform with a Polymarket-style trading UI, live ETB wallet, and real-time odds caching — deployed to AWS EC2 via GitHub Actions CI/CD.',
+    description: [
+      'FidaBet is a production-deployed betting platform that pairs a Polymarket-style prediction-markets app with a live sportsbook, backed by a Spring Boot microservice and automated CI/CD.',
+      '',
+      '▸ Polymarket-Style Prediction Markets',
+      '  • Yes/No outcome markets with live probability charts, category feeds (Trending, Politics, Crypto, Geopolitics, Ethiopia), and event detail views.',
+      '  • Trade widget with Buy/Sell tabs, quick stake presets (+10/+50/+100/+500), market/limit order types, and verified-player account badge.',
+      '  • Crypto perps with live price charts (Lightweight Charts), trending tickers, market chat, and an interactive How-It-Works onboarding modal.',
+      '▸ Live Sportsbook Integration',
+      '  • Live fixtures, odds and markets served from API-Football v3 through a Redis cache-aside layer (15–180s granular TTLs per data region).',
+      '  • Distributed SETNX lock guarantees a single API poller across scaled replicas to protect provider quota.',
+      '▸ Wallet & Auth Backend',
+      '  • Spring Boot 3.3.3 + JPA/PostgreSQL with JWT authentication, atomic conditional balance updates, and a persisted wallet transaction ledger (Telebirr deposit/withdraw flows).',
+      '  • Resilience4j circuit breaking, Actuator observability, and an admin editor API for persisting prediction-market content across devices.',
+      '▸ Cloud Delivery',
+      '  • Dockerized frontend + backend images pushed to Amazon ECR and rolled out zero-downtime to AWS EC2 by a 12-stage GitHub Actions pipeline (~2m 30s).',
+    ].join('\n'),
+    folderId: 'folder-software-dev',
+    tags: ['Polymarket', 'Prediction Markets', 'Spring Boot', 'Redis', 'React', 'AWS'],
+    techStack: ['React 19', 'TypeScript', 'Tailwind CSS 4', 'Spring Boot 3.3.3', 'Java 17', 'PostgreSQL', 'Redis 7 (Lettuce)', 'API-Football v3', 'JWT Auth', 'Docker', 'Amazon ECR + EC2', 'GitHub Actions CI/CD'],
+    githubUrl: 'https://github.com/yonialt/betting-with-fida-auth',
+    imageUrl: softwaredevpolyImage,
+    featured: true,
+    createdAt: '2026-09-18T10:00:00.000Z',
+    updatedAt: '2026-09-18T10:00:00.000Z',
   },
   {
     id: 'proj-contextpack',
