@@ -957,6 +957,7 @@ export const INITIAL_PROJECTS: Project[] = [
     tags: ['Polymarket', 'Prediction Markets', 'Spring Boot', 'Redis', 'React', 'AWS'],
     techStack: ['React 19', 'TypeScript', 'Tailwind CSS 4', 'Spring Boot 3.3.3', 'Java 17', 'PostgreSQL', 'Redis 7 (Lettuce)', 'API-Football v3', 'JWT Auth', 'Docker', 'Amazon ECR + EC2', 'GitHub Actions CI/CD'],
     githubUrl: 'https://github.com/yonialt/betting-with-fida-auth',
+    liveUrl: 'http://107.23.159.58:3000',
     imageUrl: softwaredevpolyImage,
     featured: true,
     createdAt: '2026-09-18T10:00:00.000Z',
